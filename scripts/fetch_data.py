@@ -17,10 +17,6 @@ def _already_fetched() -> bool:
     return all((DATASET_DIR / name).exists() for name in REQUIRED_FILES)
 
 
-def _archive_present(archive: Path) -> bool:
-    return archive.exists()
-
-
 def _download(dest: Path) -> None:
     logger.info("downloading %s", DATASET_URL)
     try:
@@ -47,7 +43,7 @@ def main() -> None:
     RAW_DIR.mkdir(parents=True, exist_ok=True)
     archive_path = RAW_DIR / "ml-100k.zip"
 
-    if _archive_present(archive_path):
+    if archive_path.exists():
         logger.info("archive already present at %s, skipping download", archive_path)
     else:
         _download(archive_path)

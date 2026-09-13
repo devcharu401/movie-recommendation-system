@@ -15,11 +15,11 @@ def build_user_movie_matrix(merged: pd.DataFrame) -> pd.DataFrame:
 
 
 def _disambiguate_titles(merged: pd.DataFrame) -> pd.Series:
-    """MovieLens 100K carries at least one duplicate title under two distinct
-    movie_ids ('Chasing Amy (1997)' is both 246 and 268); pivoting on the raw
-    title would silently merge them into a single, averaged column. Suffix
-    the movie_id onto any non-unique title so every movie keeps its own
-    column."""
+    # MovieLens 100K carries at least one duplicate title under two distinct
+    # movie_ids ('Chasing Amy (1997)' is both 246 and 268); pivoting on the raw
+    # title would silently merge them into a single, averaged column. Suffix
+    # the movie_id onto any non-unique title so every movie keeps its own
+    # column.
     id_title = merged[["movie_id", "movie_title"]].drop_duplicates()
     duplicate_titles = set(id_title.loc[id_title["movie_title"].duplicated(keep=False), "movie_title"])
     if not duplicate_titles:

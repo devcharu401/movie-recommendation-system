@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from pathlib import Path
 
-import pandas as pd
 from sklearn.neighbors import NearestNeighbors
 
 from app.ml.knn_engine import recommend_item_based, recommend_user_based
@@ -26,13 +25,6 @@ class Recommendation:
         self._similar_users_count = similar_users_count
         self._top_n_recommendations = top_n_recommendations
         self._figures_dir = figures_dir
-
-        self.user_feature_df: pd.DataFrame
-        self.movie_feature_df: pd.DataFrame
-        self._movie_catalog: pd.DataFrame
-        self._merged_dataset: pd.DataFrame
-        self._user_model: NearestNeighbors
-        self._movie_model: NearestNeighbors
 
         self._apply(self._load_artifacts())
 
@@ -64,7 +56,9 @@ class Recommendation:
     def recommend(self, *, user_id: int | None = None, movie_title: str | None = None) -> list[dict]:
         """Dispatches to the user-based or item-based path depending on which
         identifier is supplied."""
-        if (user_id is None) == (movie_title is None):
+        if user_id is None and movie_title is None:
+            raise ValueError("provide exactly one of user_id or movie_title")
+        if user_id is not None and movie_title is not None:
             raise ValueError("provide exactly one of user_id or movie_title")
         if user_id is not None:
             return recommend_user_based(
