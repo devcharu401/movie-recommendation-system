@@ -11,7 +11,7 @@ MODELS_DIR = BASE_DIR / "models"
 
 
 def main() -> None:
-    app = create_app()
+    app = create_app(load_recommendation_service=False)
     with app.app_context():
         trainer = ModelTrainer(MODELS_DIR, app.config["MIN_RATINGS_PER_MOVIE"])
         trainer.train()

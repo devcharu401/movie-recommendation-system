@@ -111,8 +111,44 @@ sparsity of the user-movie matrix:
 python scripts/evaluate.py
 ```
 
-This requires the database and trained model to already exist (run
-`scripts/initialise.py` first if you haven't).
+This requires the database to already be populated (run
+`scripts/load_database.py`, or `scripts/initialise.py`, first if it
+isn't). It fits its own models on the held-out train split and does not
+need `scripts/train_model.py` to have been run.
+
+## Deployment
+
+This project deploys to [Render](https://render.com) as a free-tier
+Python web service, configured declaratively in `render.yaml` at the
+project root (a Render "Blueprint").
+
+- **Build**: `pip install -r requirements.txt && python scripts/load_database.py && python scripts/train_model.py`
+  — installs dependencies, loads `data/raw/ml-100k/` into SQLite, then
+  builds and persists the KNN models to `models/`.
+- **Start**: `gunicorn wsgi:app --bind 0.0.0.0:$PORT` — serves the app
+  with gunicorn, binding to the port Render assigns via the `PORT`
+  environment variable. Nothing in the codebase hardcodes a port;
+  local development is unaffected and continues to use
+  `flask --app wsgi run` on Flask's default port.
+- **Health check**: `/health`, so Render can detect the service is up.
+
+The raw MovieLens dataset (`data/raw/ml-100k/`) is committed to this
+repository rather than fetched during the build, because GroupLens's TLS
+certificate is currently expired and Render's build environment cannot
+download it. `scripts/fetch_data.py` still skips the download whenever
+the extracted files are already present, so this only matters for an
+environment that doesn't have them yet — the zip archive itself,
+`data/processed/`, the SQLite database, and `models/*.joblib` remain
+gitignored and are rebuilt by the build step.
+
+`render.yaml` sets `APP_ENV=production` (so debug mode stays off) and
+has Render generate a random `SECRET_KEY` at deploy time — the
+application factory refuses to start under the production config
+without one.
+
+To deploy: push this repository to GitHub (or GitLab) and create a new
+Blueprint in the Render dashboard pointing at it; Render reads
+`render.yaml` and provisions the service automatically.
 
 ## Note on styling
 

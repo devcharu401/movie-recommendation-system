@@ -43,7 +43,7 @@ def _print_report(report: EvaluationReport) -> None:
 
 
 def main() -> None:
-    app = create_app()
+    app = create_app(load_recommendation_service=False)
     with app.app_context():
         merged = build_preprocessed_dataset(app.config["MIN_RATINGS_PER_MOVIE"])
         report = run_evaluation(

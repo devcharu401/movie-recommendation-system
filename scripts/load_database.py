@@ -16,7 +16,7 @@ RAW_DIR = BASE_DIR / "data" / "raw" / "ml-100k"
 
 
 def main() -> None:
-    app = create_app()
+    app = create_app(load_recommendation_service=False)
     with app.app_context():
         users_df = load_user_data(RAW_DIR / "u.user")
         movies_df = load_movie_data(RAW_DIR / "u.item")
