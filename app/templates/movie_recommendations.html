@@ -5,16 +5,25 @@
 {% if results %}
 <div class="cards">
     {% for movie in results %}
+    {% set similarity_display = "%.3f"|format(movie.similarity) %}
     <article class="card">
-        <h3>{{ movie.movie_title }}</h3>
-        <p class="genre">{{ movie.genre }}</p>
-        <p class="year">{{ movie.release_date.year if movie.release_date else "Unknown" }}</p>
-        <p class="similarity">Similarity: {{ "%.3f"|format(movie.similarity) }}</p>
+        <h3 class="card-title">{{ movie.movie_title }}</h3>
+        <div class="genre-pills">
+            {% for genre in movie.genre.split('|') if genre %}
+            <span class="pill">{{ genre }}</span>
+            {% endfor %}
+        </div>
+        <div class="similarity" title="Cosine similarity between the rating patterns of these two movies, on a scale of 0 to 1.">
+            <div class="similarity-track">
+                <div class="similarity-fill" style="width: {{ (similarity_display|float * 100)|round(1) }}%;"></div>
+            </div>
+            <span class="similarity-value">Similarity {{ similarity_display }}</span>
+        </div>
     </article>
     {% endfor %}
 </div>
 {% else %}
 <p>No similar movies found.</p>
 {% endif %}
-<p><a href="{{ url_for('api.index') }}">Back to form</a></p>
+<p class="back-link"><a href="{{ url_for('api.index') }}" class="button button-secondary">Back to form</a></p>
 {% endblock %}

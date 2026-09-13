@@ -5,17 +5,26 @@
 {% if results %}
 <div class="cards">
     {% for movie in results %}
+    {% set similarity_display = "%.3f"|format(movie.similarity) %}
     <article class="card">
-        <h3>{{ movie.movie_title }}</h3>
-        <p class="genre">{{ movie.genre }}</p>
-        <p class="year">{{ movie.release_date.year if movie.release_date else "Unknown" }}</p>
-        <p class="similarity">Similarity: {{ "%.3f"|format(movie.similarity) }}</p>
-        <p class="score">Relevance score: {{ "%.3f"|format(movie.rank_score) }}</p>
+        <h3 class="card-title">{{ movie.movie_title }}</h3>
+        <div class="genre-pills">
+            {% for genre in movie.genre.split('|') if genre %}
+            <span class="pill">{{ genre }}</span>
+            {% endfor %}
+        </div>
+        <div class="similarity" title="Cosine similarity between this user and the neighbouring user whose ratings surfaced this recommendation.">
+            <div class="similarity-track">
+                <div class="similarity-fill" style="width: {{ (similarity_display|float * 100)|round(1) }}%;"></div>
+            </div>
+            <span class="similarity-value">Similarity {{ similarity_display }}</span>
+        </div>
+        <div class="card-footer" title="Combines how highly similar users rated this movie with how widely it has been rated overall.">Relevance score: {{ "%.3f"|format(movie.rank_score) }}</div>
     </article>
     {% endfor %}
 </div>
 {% else %}
 <p>No recommendations found for this user.</p>
 {% endif %}
-<p><a href="{{ url_for('api.index') }}">Back to form</a></p>
+<p class="back-link"><a href="{{ url_for('api.index') }}" class="button button-secondary">Back to form</a></p>
 {% endblock %}
