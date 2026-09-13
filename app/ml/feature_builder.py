@@ -43,6 +43,17 @@ def build_movie_features(user_movie_matrix: pd.DataFrame) -> pd.DataFrame:
     return user_movie_matrix.T
 
 
+def build_movie_catalog(merged: pd.DataFrame) -> pd.DataFrame:
+    """Maps each disambiguated movie_label used as a matrix row/column back to
+    its movie_id, title, genre and release_date, so the recommendation engine
+    can assemble result records from a label alone."""
+    labels = _disambiguate_titles(merged)
+    catalog = merged.assign(movie_label=labels)[
+        ["movie_label", "movie_id", "movie_title", "genre", "release_date"]
+    ].drop_duplicates(subset="movie_label")
+    return catalog.set_index("movie_label")
+
+
 def to_sparse_matrix(feature_df: pd.DataFrame) -> csr_matrix:
     """Sparse Matrix Handler (spec 13.3): the ratings matrix is overwhelmingly
     zeros, so the KNN engine works against a csr_matrix rather than the dense
