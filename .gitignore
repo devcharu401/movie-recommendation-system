@@ -1,0 +1,17 @@
+﻿.env
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+data/raw/
+data/processed/
+*.db
+*.sqlite3
+models/*.joblib
+models/*.pkl
+reports/figures/
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
