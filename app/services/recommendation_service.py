@@ -87,3 +87,13 @@ class Recommendation:
         """Generates the report figures (spec 13.6) from the currently
         loaded dataset."""
         return generate_all_figures(self._merged_dataset, self._figures_dir, self._top_n_recommendations)
+
+    def known_user_ids(self) -> list[int]:
+        """User IDs present in the trained user-movie matrix, for input
+        validation (spec 13.5)."""
+        return list(self.user_feature_df.index)
+
+    def recommendable_movie_titles(self) -> list[str]:
+        """The filtered, recommendable movie set (spec 13.5), for input
+        validation and the /api/movies autocomplete source."""
+        return sorted(self._movie_catalog.index)

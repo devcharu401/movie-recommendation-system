@@ -55,6 +55,7 @@ def recommend_user_based(
     already_rated = set(user_feature_df.columns[user_feature_df.loc[user_id] > 0])
 
     scores: dict[str, float] = {}
+    neighbor_similarity: dict[str, float] = {}
     for neighbor_id, similarity in neighbors:
         neighbor_ratings = user_feature_df.loc[neighbor_id]
         highly_rated = neighbor_ratings[neighbor_ratings >= HIGH_RATING_THRESHOLD]
@@ -62,9 +63,12 @@ def recommend_user_based(
             if movie_label in already_rated:
                 continue
             scores[movie_label] = scores.get(movie_label, 0.0) + similarity * rating
+            # neighbors is ordered by descending similarity, so the first
+            # neighbor to surface a movie is its most similar contributor.
+            neighbor_similarity.setdefault(movie_label, similarity)
 
     ranked = rank_candidates(scores, top_n)
-    return _build_result_records(ranked, movie_catalog)
+    return _build_user_based_records(ranked, movie_catalog, neighbor_similarity)
 
 
 def recommend_item_based(
@@ -89,7 +93,7 @@ def recommend_item_based(
     }
 
     ranked = rank_candidates(candidates, top_n)
-    return _build_result_records(ranked, movie_catalog)
+    return _build_item_based_records(ranked, movie_catalog)
 
 
 def _resolve_movie_label(movie_title: str, movie_catalog: pd.DataFrame) -> str:
@@ -103,17 +107,32 @@ def _resolve_movie_label(movie_title: str, movie_catalog: pd.DataFrame) -> str:
     return matches[0]
 
 
-def _build_result_records(ranked: list[tuple[str, float]], movie_catalog: pd.DataFrame) -> list[dict]:
+def _base_record(label: str, movie_catalog: pd.DataFrame) -> dict:
+    row = movie_catalog.loc[label]
+    return {
+        "movie_id": int(row["movie_id"]),
+        "movie_title": row["movie_title"],
+        "genre": row["genre"],
+        "release_date": row["release_date"],
+    }
+
+
+def _build_item_based_records(ranked: list[tuple[str, float]], movie_catalog: pd.DataFrame) -> list[dict]:
     records = []
-    for label, score in ranked:
-        row = movie_catalog.loc[label]
-        records.append(
-            {
-                "movie_id": int(row["movie_id"]),
-                "movie_title": row["movie_title"],
-                "genre": row["genre"],
-                "release_date": row["release_date"],
-                "score": float(score),
-            }
-        )
+    for label, similarity in ranked:
+        record = _base_record(label, movie_catalog)
+        record["similarity"] = float(similarity)
+        records.append(record)
+    return records
+
+
+def _build_user_based_records(
+    ranked: list[tuple[str, float]], movie_catalog: pd.DataFrame, neighbor_similarity: dict[str, float]
+) -> list[dict]:
+    records = []
+    for label, rank_score in ranked:
+        record = _base_record(label, movie_catalog)
+        record["rank_score"] = float(rank_score)
+        record["similarity"] = float(neighbor_similarity[label])
+        records.append(record)
     return records

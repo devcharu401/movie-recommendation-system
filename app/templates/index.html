@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}Movie Recommendation System{% endblock %}
+{% block content %}
+{% if error %}
+<p class="error">{{ error }}</p>
+{% endif %}
+
+<section>
+    <h2>User-Based Recommendations</h2>
+    <form method="post" action="{{ url_for('api.recommend_user') }}">
+        <label for="user_id">Enter a user ID from the dataset (1-943)</label>
+        <input type="number" id="user_id" name="user_id" min="1" max="943" required>
+        <button type="submit">Get Recommendations</button>
+    </form>
+</section>
+
+<section>
+    <h2>Item-Based Recommendations</h2>
+    <form method="post" action="{{ url_for('api.recommend_movie') }}">
+        <label for="movie_title">Enter a movie title</label>
+        <input type="text" id="movie_title" name="movie_title" list="movie-titles" required>
+        <datalist id="movie-titles">
+            {% for title in movie_titles %}
+            <option value="{{ title }}"></option>
+            {% endfor %}
+        </datalist>
+        <button type="submit">Get Recommendations</button>
+    </form>
+</section>
+{% endblock %}

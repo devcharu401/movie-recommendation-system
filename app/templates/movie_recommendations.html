@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}Item-Based Recommendations{% endblock %}
+{% block content %}
+<h2>Movies Similar to "{{ movie_title }}"</h2>
+{% if results %}
+<div class="cards">
+    {% for movie in results %}
+    <article class="card">
+        <h3>{{ movie.movie_title }}</h3>
+        <p class="genre">{{ movie.genre }}</p>
+        <p class="year">{{ movie.release_date.year if movie.release_date else "Unknown" }}</p>
+        <p class="similarity">Similarity: {{ "%.3f"|format(movie.similarity) }}</p>
+    </article>
+    {% endfor %}
+</div>
+{% else %}
+<p>No similar movies found.</p>
+{% endif %}
+<p><a href="{{ url_for('api.index') }}">Back to form</a></p>
+{% endblock %}

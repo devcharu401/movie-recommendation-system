@@ -32,6 +32,8 @@ class Config:
     MIN_RATINGS_PER_MOVIE = int(os.environ.get("MIN_RATINGS_PER_MOVIE", 100))
     TOP_N_RECOMMENDATIONS = int(os.environ.get("TOP_N_RECOMMENDATIONS", 10))
     SIMILAR_USERS_COUNT = int(os.environ.get("SIMILAR_USERS_COUNT", 5))
+    MODELS_DIR = BASE_DIR / "models"
+    FIGURES_DIR = BASE_DIR / "reports" / "figures"
 
 
 class DevelopmentConfig(Config):

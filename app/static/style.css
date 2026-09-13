@@ -1,0 +1,44 @@
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: sans-serif;
+}
+
+header,
+main {
+    padding: 1rem;
+}
+
+form {
+    margin-bottom: 1.5rem;
+}
+
+label {
+    display: block;
+    margin-bottom: 0.25rem;
+}
+
+input {
+    display: block;
+    margin-bottom: 0.5rem;
+}
+
+.cards {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.card {
+    border: 1px solid #ccc;
+    padding: 1rem;
+    width: 220px;
+}
+
+.error {
+    border: 1px solid #ccc;
+    padding: 0.5rem;
+}
