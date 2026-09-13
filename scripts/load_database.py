@@ -1,5 +1,9 @@
 import logging
+import sys
 from pathlib import Path
+
+BASE_DIR = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(BASE_DIR))
 
 from app import create_app
 from app.extensions import db
@@ -8,7 +12,6 @@ from app.models import Movie, Rating, User
 
 logger = logging.getLogger(__name__)
 
-BASE_DIR = Path(__file__).resolve().parents[1]
 RAW_DIR = BASE_DIR / "data" / "raw" / "ml-100k"
 
 
