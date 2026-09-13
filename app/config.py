@@ -6,12 +6,26 @@ from dotenv import load_dotenv
 BASE_DIR = Path(__file__).resolve().parents[1]
 load_dotenv(BASE_DIR / ".env")
 
+SQLITE_PREFIX = "sqlite:///"
+
+
+def _resolve_database_uri(raw_uri: str) -> str:
+    """Flask-SQLAlchemy resolves a relative sqlite:/// path against the
+    instance folder, not the project root. Anchor it to BASE_DIR instead so
+    DATABASE_URL can stay a portable relative path in .env."""
+    if not raw_uri.startswith(SQLITE_PREFIX):
+        return raw_uri
+    path = Path(raw_uri[len(SQLITE_PREFIX):])
+    if not path.is_absolute():
+        path = BASE_DIR / path
+    return f"{SQLITE_PREFIX}{path}"
+
 
 class Config:
     APP_ENV = os.environ.get("APP_ENV", "development")
     SECRET_KEY = os.environ.get("SECRET_KEY", "")
-    SQLALCHEMY_DATABASE_URI = os.environ.get(
-        "DATABASE_URL", f"sqlite:///{BASE_DIR / 'data' / 'movie_recommendation.db'}"
+    SQLALCHEMY_DATABASE_URI = _resolve_database_uri(
+        os.environ.get("DATABASE_URL", f"sqlite:///{BASE_DIR / 'data' / 'movie_recommendation.db'}")
     )
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     LOG_LEVEL = os.environ.get("LOG_LEVEL", "INFO")
