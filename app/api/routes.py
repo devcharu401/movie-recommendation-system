@@ -28,7 +28,11 @@ def recommend_user():
     result = service.recommend(user_id=user_id)
     profile = service.viewer_profile(user_id)
     return render_template(
-        "user_recommendations.html", user_id=user_id, results=result.recommendations, profile=profile
+        "user_recommendations.html",
+        user_id=user_id,
+        results=result.recommendations,
+        profile=profile,
+        neighbors=result.neighbors,
     )
 
 

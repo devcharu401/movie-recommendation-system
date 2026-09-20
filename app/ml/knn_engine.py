@@ -124,7 +124,18 @@ def _neighbor_top_rated_titles(
 ) -> tuple[str, ...]:
     neighbor_ratings = user_feature_df.loc[neighbor_id]
     candidates = neighbor_ratings[(neighbor_ratings > 0) & ~neighbor_ratings.index.isin(already_rated)]
-    top_labels = candidates.sort_values(ascending=False).index[:NEIGHBOR_TOP_MOVIES_CAP]
+
+    # Many films tie at the neighbour's own maximum rating. Break the tie by
+    # rating_count (how widely the film is rated overall, precomputed on
+    # movie_catalog at model-build time) rather than leaving it to sort
+    # order, which would otherwise default to the pivot table's alphabetical
+    # column order. Sorting on two columns routes through np.lexsort, which
+    # is stable, so this is deterministic without naming a sort kind.
+    ranking = pd.DataFrame(
+        {"rating": candidates, "rating_count": movie_catalog.loc[candidates.index, "rating_count"]}
+    ).sort_values(by=["rating", "rating_count"], ascending=False)
+
+    top_labels = ranking.index[:NEIGHBOR_TOP_MOVIES_CAP]
     return tuple(movie_catalog.loc[label, "movie_title"] for label in top_labels)
 
 

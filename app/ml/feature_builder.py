@@ -45,12 +45,18 @@ def build_movie_features(user_movie_matrix: pd.DataFrame) -> pd.DataFrame:
 
 def build_movie_catalog(merged: pd.DataFrame) -> pd.DataFrame:
     """Maps each disambiguated movie_label used as a matrix row/column back to
-    its movie_id, title, genre and release_date, so the recommendation engine
-    can assemble result records from a label alone."""
+    its movie_id, title, genre, release_date and rating_count, so the
+    recommendation engine can assemble result records — and break rating
+    ties by how widely a film is rated — from a label alone. rating_count is
+    the number of surviving ratings per film in this same filtered dataset,
+    computed once here rather than at request time."""
     labels = _disambiguate_titles(merged)
-    catalog = merged.assign(movie_label=labels)[
-        ["movie_label", "movie_id", "movie_title", "genre", "release_date"]
-    ].drop_duplicates(subset="movie_label")
+    tagged = merged.assign(movie_label=labels)
+    catalog = tagged[["movie_label", "movie_id", "movie_title", "genre", "release_date"]].drop_duplicates(
+        subset="movie_label"
+    )
+    rating_counts = tagged.groupby("movie_label").size().rename("rating_count")
+    catalog = catalog.merge(rating_counts, on="movie_label", how="left")
     return catalog.set_index("movie_label")
 
 

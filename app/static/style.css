@@ -362,6 +362,25 @@ button:focus,
     white-space: nowrap;
 }
 
+.neighbor-bar {
+    display: flex;
+    align-items: center;
+    gap: var(--space-1);
+}
+
+.neighbor-bar-track {
+    flex: 1;
+    height: 6px;
+    background: var(--color-bg-alt);
+    border-radius: 999px;
+    overflow: hidden;
+}
+
+.neighbor-bar-fill {
+    height: 100%;
+    background: var(--color-accent);
+}
+
 .card-footer {
     margin-top: var(--space-1);
     padding-top: var(--space-1);

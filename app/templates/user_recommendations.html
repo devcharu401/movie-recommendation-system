@@ -14,6 +14,29 @@
     </div>
     {% endif %}
 </section>
+<section class="profile">
+    <h3>Closest viewers</h3>
+    <p>These are the viewers whose ratings were compared with yours using cosine similarity to build this list.</p>
+    {% if neighbors %}
+    <ul>
+        {% for neighbor in neighbors %}
+        <li>
+            <div class="neighbor-bar">
+                <div class="neighbor-bar-track">
+                    <div class="neighbor-bar-fill" style="width: {{ (neighbor.similarity * 100)|round(1) }}%;"></div>
+                </div>
+                <span class="similarity-value">Viewer {{ neighbor.user_id }} &mdash; {{ "%.3f"|format(neighbor.similarity) }}</span>
+            </div>
+            {% if neighbor.top_rated_movies %}
+            <p>also rated highly: {{ neighbor.top_rated_movies[:3]|join(', ') }}</p>
+            {% endif %}
+        </li>
+        {% endfor %}
+    </ul>
+    {% else %}
+    <p>No neighbour data available for this user.</p>
+    {% endif %}
+</section>
 {% if results %}
 <div class="cards">
     {% for movie in results %}
