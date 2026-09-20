@@ -108,6 +108,89 @@ main {
     color: var(--color-accent-strong);
 }
 
+/* Dataset overview */
+
+.stats {
+    margin-bottom: var(--space-3);
+}
+
+.stat-strip {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(140px, 100%), 1fr));
+    gap: var(--space-2);
+    margin-bottom: var(--space-1);
+}
+
+.stat {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    padding: var(--space-2);
+    text-align: center;
+}
+
+.stat-value {
+    display: block;
+    font-size: 1.4rem;
+    font-weight: 600;
+}
+
+.stat-modelled {
+    display: block;
+    font-size: 0.8rem;
+    color: var(--color-text-muted);
+}
+
+.stat-label {
+    display: block;
+    margin-top: var(--space-1);
+    font-size: 0.85rem;
+    color: var(--color-text-muted);
+}
+
+.stat-range {
+    color: var(--color-text-muted);
+    font-size: 0.9rem;
+}
+
+/* How it works */
+
+.how-it-works {
+    margin-bottom: var(--space-3);
+}
+
+.steps {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(200px, 100%), 1fr));
+    gap: var(--space-2);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    counter-reset: step;
+}
+
+.step {
+    counter-increment: step;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    padding: var(--space-2);
+}
+
+.step::before {
+    content: counter(step);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.75rem;
+    height: 1.75rem;
+    margin-bottom: var(--space-1);
+    border-radius: 50%;
+    background: var(--color-accent-soft);
+    color: var(--color-accent-strong);
+    font-weight: 600;
+}
+
 /* Input panels */
 
 .panels {
@@ -296,7 +379,9 @@ button:focus,
 
 @media (max-width: 640px) {
     .panels,
-    .cards {
+    .cards,
+    .stat-strip,
+    .steps {
         grid-template-columns: 1fr;
     }
 

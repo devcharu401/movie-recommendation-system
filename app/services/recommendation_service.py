@@ -1,13 +1,33 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from datetime import datetime
 from pathlib import Path
 
 from sklearn.neighbors import NearestNeighbors
 
 from app.ml.knn_engine import Neighbor, NeighborRating, recommend_item_based, recommend_user_based
+from app.repositories.rating_repository import get_dataset_statistics
 from app.services.model_trainer import ModelArtifacts, ModelTrainer
 from app.services.visualization_service import generate_all_figures
+
+
+@dataclass(frozen=True)
+class DatasetOverview:
+    """Landing-page dataset overview (spec 13.5, Result Display Entity).
+    raw_* comes straight from the database; modelled_* is what actually
+    reaches the KNN models after preprocessing's filters (spec 13.2)."""
+
+    raw_viewers: int
+    raw_films: int
+    raw_ratings: int
+    raw_genres: int
+    modelled_viewers: int
+    modelled_films: int
+    modelled_ratings: int
+    modelled_genres: int
+    earliest_rating: datetime
+    latest_rating: datetime
 
 
 @dataclass(frozen=True)
@@ -109,3 +129,29 @@ class Recommendation:
         """The filtered, recommendable movie set (spec 13.5), for input
         validation and the /api/movies autocomplete source."""
         return sorted(self._movie_catalog.index)
+
+    def dataset_statistics(self) -> DatasetOverview:
+        """Raw counts come from the database via the repository; modelled
+        counts come from the merged, filtered frame already held in memory
+        from artifact load, so this never re-queries or re-derives what
+        train_model() already produced. merged has one row per surviving
+        rating, so user_id/movie_id nunique() and len() give viewers, films
+        and ratings on the right axis; genre still needs splitting on '|'
+        for the same reason as the raw count."""
+        raw = get_dataset_statistics()
+        merged = self._merged_dataset
+        modelled_genre_tokens = {
+            genre for combination in merged["genre"].dropna().unique() if combination for genre in combination.split("|")
+        }
+        return DatasetOverview(
+            raw_viewers=raw["total_viewers"],
+            raw_films=raw["total_films"],
+            raw_ratings=raw["total_ratings"],
+            raw_genres=raw["distinct_genres"],
+            modelled_viewers=int(merged["user_id"].nunique()),
+            modelled_films=int(merged["movie_id"].nunique()),
+            modelled_ratings=int(len(merged)),
+            modelled_genres=len(modelled_genre_tokens),
+            earliest_rating=raw["earliest_rating"],
+            latest_rating=raw["latest_rating"],
+        )

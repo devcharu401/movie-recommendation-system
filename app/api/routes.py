@@ -14,7 +14,11 @@ def _service():
 @bp.route("/", methods=["GET"])
 def index():
     service = _service()
-    return render_template("index.html", movie_titles=service.recommendable_movie_titles())
+    return render_template(
+        "index.html",
+        movie_titles=service.recommendable_movie_titles(),
+        stats=service.dataset_statistics(),
+    )
 
 
 @bp.route("/recommend/user", methods=["POST"])

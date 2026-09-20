@@ -5,6 +5,53 @@
 <p class="error">{{ error }}</p>
 {% endif %}
 
+<section class="stats">
+    <h2>Built on</h2>
+    <div class="stat-strip">
+        <div class="stat">
+            <span class="stat-value">{{ stats.raw_viewers }}</span>
+            {% if stats.modelled_viewers != stats.raw_viewers %}
+            <span class="stat-modelled">{{ stats.modelled_viewers }} modelled</span>
+            {% endif %}
+            <span class="stat-label">Viewers</span>
+        </div>
+        <div class="stat">
+            <span class="stat-value">{{ stats.raw_films }}</span>
+            {% if stats.modelled_films != stats.raw_films %}
+            <span class="stat-modelled">{{ stats.modelled_films }} modelled</span>
+            {% endif %}
+            <span class="stat-label">Films</span>
+        </div>
+        <div class="stat">
+            <span class="stat-value">{{ stats.raw_ratings }}</span>
+            {% if stats.modelled_ratings != stats.raw_ratings %}
+            <span class="stat-modelled">{{ stats.modelled_ratings }} modelled</span>
+            {% endif %}
+            <span class="stat-label">Ratings</span>
+        </div>
+        <div class="stat">
+            <span class="stat-value">{{ stats.raw_genres }}</span>
+            {% if stats.modelled_genres != stats.raw_genres %}
+            <span class="stat-modelled">{{ stats.modelled_genres }} modelled</span>
+            {% endif %}
+            <span class="stat-label">Genres</span>
+        </div>
+    </div>
+    <p class="stat-range">
+        Ratings collected {{ stats.earliest_rating.strftime('%B %Y') }} to {{ stats.latest_rating.strftime('%B %Y') }}
+    </p>
+</section>
+
+<section class="how-it-works">
+    <h2>How it works</h2>
+    <ol class="steps">
+        <li class="step">Build a grid of every viewer against every film they've rated.</li>
+        <li class="step">Compare tastes between viewers using cosine similarity.</li>
+        <li class="step">Find the viewers whose tastes are closest to yours.</li>
+        <li class="step">Rank the films those close viewers rated highly.</li>
+    </ol>
+</section>
+
 <div class="panels">
     <section class="panel">
         <h2>User-Based Recommendations</h2>
