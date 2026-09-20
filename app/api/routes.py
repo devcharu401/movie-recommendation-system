@@ -26,7 +26,10 @@ def recommend_user():
     service = _service()
     user_id = validate_user_id(request.form.get("user_id"), service.known_user_ids())
     result = service.recommend(user_id=user_id)
-    return render_template("user_recommendations.html", user_id=user_id, results=result.recommendations)
+    profile = service.viewer_profile(user_id)
+    return render_template(
+        "user_recommendations.html", user_id=user_id, results=result.recommendations, profile=profile
+    )
 
 
 @bp.route("/recommend/movie", methods=["POST"])

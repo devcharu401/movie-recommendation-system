@@ -7,9 +7,27 @@ from pathlib import Path
 from sklearn.neighbors import NearestNeighbors
 
 from app.ml.knn_engine import Neighbor, NeighborRating, recommend_item_based, recommend_user_based
-from app.repositories.rating_repository import get_dataset_statistics
+from app.repositories.rating_repository import get_dataset_statistics, get_user_genre_distribution
+from app.repositories.user_repository import get_user_profile
 from app.services.model_trainer import ModelArtifacts, ModelTrainer
 from app.services.visualization_service import generate_all_figures
+
+NO_OCCUPATION_RECORDED = "none"
+TOP_GENRE_COUNT = 3
+
+
+def _age_band(age: int) -> str:
+    if age < 18:
+        return "Under 18"
+    if age <= 24:
+        return "18-24"
+    if age <= 34:
+        return "25-34"
+    if age <= 44:
+        return "35-44"
+    if age <= 54:
+        return "45-54"
+    return "55 and over"
 
 
 @dataclass(frozen=True)
@@ -28,6 +46,23 @@ class DatasetOverview:
     modelled_genres: int
     earliest_rating: datetime
     latest_rating: datetime
+
+
+@dataclass(frozen=True)
+class GenreShare:
+    genre: str
+    percentage: int
+
+
+@dataclass(frozen=True)
+class ViewerProfile:
+    """Viewer profile panel above the user-based results (spec 13.5)."""
+
+    age_band: str
+    occupation: str | None
+    films_rated: int
+    mean_rating: float
+    top_genres: list[GenreShare]
 
 
 @dataclass(frozen=True)
@@ -154,4 +189,29 @@ class Recommendation:
             modelled_genres=len(modelled_genre_tokens),
             earliest_rating=raw["earliest_rating"],
             latest_rating=raw["latest_rating"],
+        )
+
+    def viewer_profile(self, user_id: int) -> ViewerProfile:
+        """Profile panel shown above one user's recommendations (spec 13.5).
+        Age banding happens here, not in the repository or the template, so
+        the band boundaries live in exactly one place."""
+        facts = get_user_profile(user_id)
+        if facts is None:
+            raise ValueError(f"unknown user_id: {user_id}")
+
+        occupation = facts["occupation"]
+        if not occupation or occupation.strip().lower() == NO_OCCUPATION_RECORDED:
+            occupation = None
+
+        top_genres = [
+            GenreShare(genre=entry["genre"], percentage=round(entry["share"] * 100))
+            for entry in get_user_genre_distribution(user_id)[:TOP_GENRE_COUNT]
+        ]
+
+        return ViewerProfile(
+            age_band=_age_band(facts["age"]),
+            occupation=occupation,
+            films_rated=facts["films_rated"],
+            mean_rating=round(facts["mean_rating"], 1),
+            top_genres=top_genres,
         )

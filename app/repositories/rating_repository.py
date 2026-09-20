@@ -50,3 +50,31 @@ def get_dataset_statistics() -> dict:
         "earliest_rating": earliest_rating,
         "latest_rating": latest_rating,
     }
+
+
+def get_user_genre_distribution(user_id: int) -> list[dict]:
+    """Per-genre share of one viewer's rated films (spec 13.5, viewer
+    profile). Genres are stored pipe-delimited on the movie (spec 3.4), so
+    the split happens here, against the small set of films this one user
+    rated, rather than in the service layer or the template."""
+    genre_combinations = [
+        row[0]
+        for row in db.session.query(Movie.genre).join(Rating, Rating.movie_id == Movie.movie_id).filter(
+            Rating.user_id == user_id
+        )
+    ]
+    total_films = len(genre_combinations)
+    if total_films == 0:
+        return []
+
+    counts: dict[str, int] = {}
+    for combination in genre_combinations:
+        if not combination:
+            continue
+        for genre in combination.split("|"):
+            counts[genre] = counts.get(genre, 0) + 1
+
+    return [
+        {"genre": genre, "share": count / total_films}
+        for genre, count in sorted(counts.items(), key=lambda item: item[1], reverse=True)
+    ]
