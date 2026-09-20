@@ -1,12 +1,25 @@
 from __future__ import annotations
 
+from dataclasses import dataclass
 from pathlib import Path
 
 from sklearn.neighbors import NearestNeighbors
 
-from app.ml.knn_engine import recommend_item_based, recommend_user_based
+from app.ml.knn_engine import Neighbor, NeighborRating, recommend_item_based, recommend_user_based
 from app.services.model_trainer import ModelArtifacts, ModelTrainer
 from app.services.visualization_service import generate_all_figures
+
+
+@dataclass(frozen=True)
+class UserBasedRecommendation:
+    """Service-layer return value for the user-based path (spec: neighbour
+    evidence must reach the caller instead of being discarded after
+    ranking). recommendations keeps its existing record shape; neighbors and
+    neighbor_ratings are the KNN engine's supporting evidence for it."""
+
+    recommendations: list[dict]
+    neighbors: list[Neighbor]
+    neighbor_ratings: dict[int, list[NeighborRating]]
 
 
 class Recommendation:
@@ -53,15 +66,19 @@ class Recommendation:
         """Returns the fitted (user_model, movie_model) pair."""
         return self._user_model, self._movie_model
 
-    def recommend(self, *, user_id: int | None = None, movie_title: str | None = None) -> list[dict]:
+    def recommend(
+        self, *, user_id: int | None = None, movie_title: str | None = None
+    ) -> UserBasedRecommendation | list[dict]:
         """Dispatches to the user-based or item-based path depending on which
-        identifier is supplied."""
+        identifier is supplied. User-based carries neighbour evidence
+        alongside the ranking; item-based keeps its existing record-list
+        shape, since neighbour evidence has no meaning there."""
         if user_id is None and movie_title is None:
             raise ValueError("provide exactly one of user_id or movie_title")
         if user_id is not None and movie_title is not None:
             raise ValueError("provide exactly one of user_id or movie_title")
         if user_id is not None:
-            return recommend_user_based(
+            recommendations, neighbors, neighbor_ratings = recommend_user_based(
                 user_id,
                 self.user_feature_df,
                 self._user_model,
@@ -69,6 +86,7 @@ class Recommendation:
                 self._similar_users_count,
                 self._top_n_recommendations,
             )
+            return UserBasedRecommendation(recommendations, neighbors, neighbor_ratings)
         return recommend_item_based(
             movie_title,
             self.movie_feature_df,

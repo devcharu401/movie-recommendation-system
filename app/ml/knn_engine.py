@@ -1,10 +1,34 @@
 from __future__ import annotations
 
+from dataclasses import dataclass
+
 import pandas as pd
 from scipy.sparse import csr_matrix
 from sklearn.neighbors import NearestNeighbors
 
 HIGH_RATING_THRESHOLD = 4
+NEIGHBOR_TOP_MOVIES_CAP = 5
+
+
+@dataclass(frozen=True)
+class Neighbor:
+    """One of the k nearest users behind a user-based recommendation set
+    (spec 13.4). similarity is the cosine similarity to the target user,
+    bounded 0-1; top_rated_movies is this neighbour's own highly rated
+    titles, excluding anything the target user already rated, for a later
+    'what else they liked' panel."""
+
+    user_id: int
+    similarity: float
+    top_rated_movies: tuple[str, ...]
+
+
+@dataclass(frozen=True)
+class NeighborRating:
+    """A single neighbour's rating of a recommended movie."""
+
+    neighbor_id: int
+    rating: int
 
 
 def fit_nearest_neighbors(feature_matrix: csr_matrix) -> NearestNeighbors:
@@ -35,18 +59,23 @@ def recommend_user_based(
     movie_catalog: pd.DataFrame,
     similar_users_count: int,
     top_n: int,
-) -> list[dict]:
+) -> tuple[list[dict], list[Neighbor], dict[int, list[NeighborRating]]]:
     """User-Based Recommendation Entity (spec 13.4): finds the
     similar_users_count nearest users by rating pattern, collects the movies
     they rated highly, excludes anything the target user already rated, and
-    returns the top_n ranked candidates."""
+    returns the top_n ranked candidates.
+
+    Also returns the neighbours behind that ranking (KNN Neighbor Selector
+    evidence, spec 13.4) and, per recommended movie, which of those
+    neighbours rated it and with what score — read from the in-memory
+    user-movie matrix, with no extra queries or recomputed similarities."""
     if user_id not in user_feature_df.index:
         raise ValueError(f"unknown user_id: {user_id}")
 
     target_vector = user_feature_df.loc[[user_id]].values
     distances, indices = model.kneighbors(target_vector, n_neighbors=similar_users_count + 1)
 
-    neighbors = [
+    neighbor_pairs = [
         (user_feature_df.index[position], similarity_from_distance(distance))
         for position, distance in zip(indices[0], distances[0])
         if user_feature_df.index[position] != user_id
@@ -56,19 +85,60 @@ def recommend_user_based(
 
     scores: dict[str, float] = {}
     neighbor_similarity: dict[str, float] = {}
-    for neighbor_id, similarity in neighbors:
+    for neighbor_id, similarity in neighbor_pairs:
         neighbor_ratings = user_feature_df.loc[neighbor_id]
         highly_rated = neighbor_ratings[neighbor_ratings >= HIGH_RATING_THRESHOLD]
         for movie_label, rating in highly_rated.items():
             if movie_label in already_rated:
                 continue
             scores[movie_label] = scores.get(movie_label, 0.0) + similarity * rating
-            # neighbors is ordered by descending similarity, so the first
+            # neighbor_pairs is ordered by descending similarity, so the first
             # neighbor to surface a movie is its most similar contributor.
             neighbor_similarity.setdefault(movie_label, similarity)
 
     ranked = rank_candidates(scores, top_n)
-    return _build_user_based_records(ranked, movie_catalog, neighbor_similarity)
+    recommendations = _build_user_based_records(ranked, movie_catalog, neighbor_similarity)
+
+    neighbors = [
+        Neighbor(
+            user_id=int(neighbor_id),
+            similarity=float(similarity),
+            top_rated_movies=_neighbor_top_rated_titles(neighbor_id, user_feature_df, movie_catalog, already_rated),
+        )
+        for neighbor_id, similarity in neighbor_pairs
+    ]
+
+    neighbor_ratings = {
+        int(movie_catalog.loc[label, "movie_id"]): _neighbors_who_rated(label, neighbor_pairs, user_feature_df)
+        for label, _ in ranked
+    }
+
+    return recommendations, neighbors, neighbor_ratings
+
+
+def _neighbor_top_rated_titles(
+    neighbor_id: object,
+    user_feature_df: pd.DataFrame,
+    movie_catalog: pd.DataFrame,
+    already_rated: set[str],
+) -> tuple[str, ...]:
+    neighbor_ratings = user_feature_df.loc[neighbor_id]
+    candidates = neighbor_ratings[(neighbor_ratings > 0) & ~neighbor_ratings.index.isin(already_rated)]
+    top_labels = candidates.sort_values(ascending=False).index[:NEIGHBOR_TOP_MOVIES_CAP]
+    return tuple(movie_catalog.loc[label, "movie_title"] for label in top_labels)
+
+
+def _neighbors_who_rated(
+    movie_label: str,
+    neighbor_pairs: list[tuple[object, float]],
+    user_feature_df: pd.DataFrame,
+) -> list[NeighborRating]:
+    column = user_feature_df[movie_label]
+    return [
+        NeighborRating(neighbor_id=int(neighbor_id), rating=int(column.loc[neighbor_id]))
+        for neighbor_id, _ in neighbor_pairs
+        if column.loc[neighbor_id] > 0
+    ]
 
 
 def recommend_item_based(
