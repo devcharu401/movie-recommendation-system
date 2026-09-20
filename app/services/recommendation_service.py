@@ -69,12 +69,17 @@ class ViewerProfile:
 class UserBasedRecommendation:
     """Service-layer return value for the user-based path (spec: neighbour
     evidence must reach the caller instead of being discarded after
-    ranking). recommendations keeps its existing record shape; neighbors and
-    neighbor_ratings are the KNN engine's supporting evidence for it."""
+    ranking). recommendations keeps its existing record shape; neighbors,
+    neighbor_ratings and contributing_neighbor_ratings are the KNN engine's
+    supporting evidence for it. neighbor_ratings is every neighbour who
+    rated the movie at all; contributing_neighbor_ratings is the subset that
+    met the scoring threshold and so actually shaped the ranking — kept
+    separate so a caller cannot mix the two up."""
 
     recommendations: list[dict]
     neighbors: list[Neighbor]
     neighbor_ratings: dict[int, list[NeighborRating]]
+    contributing_neighbor_ratings: dict[int, list[NeighborRating]]
 
 
 class Recommendation:
@@ -133,7 +138,7 @@ class Recommendation:
         if user_id is not None and movie_title is not None:
             raise ValueError("provide exactly one of user_id or movie_title")
         if user_id is not None:
-            recommendations, neighbors, neighbor_ratings = recommend_user_based(
+            recommendations, neighbors, neighbor_ratings, contributing_neighbor_ratings = recommend_user_based(
                 user_id,
                 self.user_feature_df,
                 self._user_model,
@@ -141,7 +146,9 @@ class Recommendation:
                 self._similar_users_count,
                 self._top_n_recommendations,
             )
-            return UserBasedRecommendation(recommendations, neighbors, neighbor_ratings)
+            return UserBasedRecommendation(
+                recommendations, neighbors, neighbor_ratings, contributing_neighbor_ratings
+            )
         return recommend_item_based(
             movie_title,
             self.movie_feature_df,

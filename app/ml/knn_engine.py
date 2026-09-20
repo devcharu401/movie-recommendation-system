@@ -59,7 +59,7 @@ def recommend_user_based(
     movie_catalog: pd.DataFrame,
     similar_users_count: int,
     top_n: int,
-) -> tuple[list[dict], list[Neighbor], dict[int, list[NeighborRating]]]:
+) -> tuple[list[dict], list[Neighbor], dict[int, list[NeighborRating]], dict[int, list[NeighborRating]]]:
     """User-Based Recommendation Entity (spec 13.4): finds the
     similar_users_count nearest users by rating pattern, collects the movies
     they rated highly, excludes anything the target user already rated, and
@@ -68,7 +68,10 @@ def recommend_user_based(
     Also returns the neighbours behind that ranking (KNN Neighbor Selector
     evidence, spec 13.4) and, per recommended movie, which of those
     neighbours rated it and with what score — read from the in-memory
-    user-movie matrix, with no extra queries or recomputed similarities."""
+    user-movie matrix, with no extra queries or recomputed similarities.
+    neighbor_ratings is every neighbour who rated the movie at all;
+    contributing_neighbor_ratings is the subset that met
+    HIGH_RATING_THRESHOLD and so actually fed into its score."""
     if user_id not in user_feature_df.index:
         raise ValueError(f"unknown user_id: {user_id}")
 
@@ -112,8 +115,12 @@ def recommend_user_based(
         int(movie_catalog.loc[label, "movie_id"]): _neighbors_who_rated(label, neighbor_pairs, user_feature_df)
         for label, _ in ranked
     }
+    contributing_neighbor_ratings = {
+        movie_id: [rating for rating in ratings if rating.rating >= HIGH_RATING_THRESHOLD]
+        for movie_id, ratings in neighbor_ratings.items()
+    }
 
-    return recommendations, neighbors, neighbor_ratings
+    return recommendations, neighbors, neighbor_ratings, contributing_neighbor_ratings
 
 
 def _neighbor_top_rated_titles(

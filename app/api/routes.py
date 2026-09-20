@@ -33,6 +33,7 @@ def recommend_user():
         results=result.recommendations,
         profile=profile,
         neighbors=result.neighbors,
+        contributing_ratings=result.contributing_neighbor_ratings,
     )
 
 

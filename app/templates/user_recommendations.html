@@ -55,6 +55,18 @@
             <span class="similarity-value">Similarity {{ similarity_display }}</span>
         </div>
         <div class="card-footer" title="Combines how highly similar users rated this movie with how widely it has been rated overall.">Relevance score: {{ "%.3f"|format(movie.rank_score) }}</div>
+        {% set movie_neighbor_ratings = contributing_ratings.get(movie.movie_id, []) %}
+        <details class="why-panel">
+            <summary>Why this one</summary>
+            <p>{{ movie_neighbor_ratings|length }} of the {{ neighbors|length }} closest viewers rated this highly.</p>
+            {% if movie_neighbor_ratings %}
+            <ul>
+                {% for entry in movie_neighbor_ratings %}
+                <li>Viewer {{ entry.neighbor_id }} rated it {{ entry.rating }}</li>
+                {% endfor %}
+            </ul>
+            {% endif %}
+        </details>
     </article>
     {% endfor %}
 </div>

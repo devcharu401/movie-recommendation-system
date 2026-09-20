@@ -389,6 +389,16 @@ button:focus,
     font-size: 0.8rem;
 }
 
+.why-panel {
+    margin-top: var(--space-1);
+    font-size: 0.85rem;
+    color: var(--color-text-muted);
+}
+
+.why-panel summary {
+    cursor: pointer;
+}
+
 .back-link {
     margin: var(--space-4) 0;
     text-align: center;

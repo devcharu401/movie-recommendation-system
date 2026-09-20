@@ -77,7 +77,7 @@ def evaluate_user_based(
         if user_id not in user_feature_df.index:
             continue
 
-        recommendations, _, _ = recommend_user_based(
+        recommendations, _, _, _ = recommend_user_based(
             user_id, user_feature_df, model, movie_catalog, neighbor_count, top_n
         )
         recommended_ids = {r["movie_id"] for r in recommendations}
