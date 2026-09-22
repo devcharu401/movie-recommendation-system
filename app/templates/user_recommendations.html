@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% block title %}User-Based Recommendations{% endblock %}
 {% block content %}
-<h2>User-Based Recommendations for User {{ user_id }}</h2>
+<h2>Recommendations for viewer {{ user_id }}</h2>
 <section class="profile">
     <h3>Viewer profile</h3>
     <p>{{ profile.age_band }}{% if profile.occupation %} &middot; {{ profile.occupation }}{% endif %}</p>
@@ -47,6 +47,7 @@
     >
 </section>
 {% if results %}
+<p class="result-count">Showing {{ results|length }} recommendation{{ 's' if results|length != 1 }}.</p>
 <div class="cards">
     {% for movie in results %}
     {% set similarity_display = "%.3f"|format(movie.similarity) %}
@@ -80,7 +81,7 @@
     {% endfor %}
 </div>
 {% else %}
-<p>No recommendations found for this user.</p>
+<p>No recommendations found — none of this viewer's closest neighbours had a highly-rated film left to suggest.</p>
 {% endif %}
-<p class="back-link"><a href="{{ url_for('api.index') }}" class="button button-secondary">Back to form</a></p>
+<p class="back-link"><a href="{{ url_for('api.index') }}" class="button button-secondary">Try another viewer ID</a></p>
 {% endblock %}

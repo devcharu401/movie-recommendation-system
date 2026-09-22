@@ -17,8 +17,13 @@
 </div>
 
 {% if selected_genre %}
-<h3>Top {{ films|length }} in {{ selected_genre }}</h3>
+<h3>Top rated in {{ selected_genre }}</h3>
 {% if films %}
+{% if films|length < max_films %}
+<p class="result-count">{{ films|length }} film{{ 's' if films|length != 1 }} in this genre {{ 'is' if films|length == 1 else 'are' }} rated by enough viewers to be included.</p>
+{% else %}
+<p class="result-count">Showing the top {{ films|length }} in this genre.</p>
+{% endif %}
 <div class="cards">
     {% for movie in films %}
     <article class="card">
@@ -36,8 +41,10 @@
     {% endfor %}
 </div>
 {% else %}
-<p>No films found in this genre.</p>
+<p>No films in this genre are rated by enough viewers to be included yet.</p>
 {% endif %}
-{% endif %}
+<p class="back-link"><a href="{{ url_for('api.browse_genres') }}" class="button button-secondary">Back to all genres</a></p>
+{% else %}
 <p class="back-link"><a href="{{ url_for('api.index') }}" class="button button-secondary">Back to form</a></p>
+{% endif %}
 {% endblock %}

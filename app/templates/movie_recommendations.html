@@ -1,8 +1,9 @@
 {% extends "base.html" %}
 {% block title %}Item-Based Recommendations{% endblock %}
 {% block content %}
-<h2>Movies Similar to "{{ movie_title }}"</h2>
+<h2>Films similar to "{{ movie_title }}"</h2>
 {% if results %}
+<p class="result-count">Showing {{ results|length }} similar film{{ 's' if results|length != 1 }}.</p>
 <div class="cards">
     {% for movie in results %}
     {% set similarity_display = "%.3f"|format(movie.similarity) %}
@@ -23,7 +24,7 @@
     {% endfor %}
 </div>
 {% else %}
-<p>No similar movies found.</p>
+<p>No similar films found — this title has no close matches in the rating data yet.</p>
 {% endif %}
-<p class="back-link"><a href="{{ url_for('api.index') }}" class="button button-secondary">Back to form</a></p>
+<p class="back-link"><a href="{{ url_for('api.index') }}" class="button button-secondary">Try another film</a></p>
 {% endblock %}

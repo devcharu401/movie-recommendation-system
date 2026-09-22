@@ -237,6 +237,10 @@ class Recommendation:
         itself uses for a 'highly rated' movie."""
         return HIGH_RATING_THRESHOLD
 
+    def browse_page_size(self) -> int:
+        """Number of films the Browse page shows per genre (spec 13.5)."""
+        return BROWSE_TOP_N
+
     def browse_genres(self) -> list[GenreTile]:
         """Genre tiles for the Browse page (spec 13.5), one per genre found
         in the recommendable movie catalog — the same filtered set the KNN

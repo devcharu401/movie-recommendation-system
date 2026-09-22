@@ -67,6 +67,7 @@ def browse_genres():
         selected_genre=None,
         films=None,
         min_ratings=current_app.config["MIN_RATINGS_PER_MOVIE"],
+        max_films=service.browse_page_size(),
     )
 
 
@@ -81,6 +82,7 @@ def browse_genre(genre):
         selected_genre=genre,
         films=service.browse_by_genre(genre),
         min_ratings=current_app.config["MIN_RATINGS_PER_MOVIE"],
+        max_films=service.browse_page_size(),
     )
 
 
