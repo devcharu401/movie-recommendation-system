@@ -295,9 +295,15 @@ footer a:hover {
 
 .stat-strip {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(min(140px, 100%), 1fr));
+    grid-template-columns: repeat(2, 1fr);
     gap: var(--space-2);
     margin-bottom: var(--space-1);
+}
+
+@media (min-width: 641px) {
+    .stat-strip {
+        grid-template-columns: repeat(4, 1fr);
+    }
 }
 
 .stat {
@@ -410,6 +416,83 @@ footer a:hover {
     margin-bottom: var(--space-1);
     color: var(--color-text-muted);
     font-size: 0.9rem;
+}
+
+/* Viewer results panels */
+
+.profile-card {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    padding: var(--space-3);
+    margin-bottom: var(--space-3);
+}
+
+.fact-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+    margin: 0 0 var(--space-2);
+}
+
+.fact {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+}
+
+.fact dt {
+    margin: 0;
+    color: var(--color-text-muted);
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.fact dd {
+    margin: 0;
+    font-size: 1.05rem;
+    color: var(--color-text);
+}
+
+.neighbor-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.neighbor-item {
+    padding: var(--space-1) 0;
+    border-bottom: 1px solid var(--color-border);
+}
+
+.neighbor-item:last-child {
+    border-bottom: none;
+}
+
+.neighbor-row {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: var(--space-2);
+}
+
+.neighbor-label {
+    font-size: 0.9rem;
+    color: var(--color-text);
+    white-space: nowrap;
+}
+
+.neighbor-value {
+    font-size: 0.85rem;
+    color: var(--color-text-muted);
+    white-space: nowrap;
+}
+
+.neighbor-detail {
+    margin: 0.25rem 0 0;
+    color: var(--color-text-muted);
+    font-size: 0.85rem;
 }
 
 /* Forms */
@@ -538,12 +621,6 @@ button:focus-visible,
     font-size: 0.85rem;
 }
 
-.card-year {
-    margin: 0;
-    color: var(--color-text-muted);
-    font-size: 0.85rem;
-}
-
 /* Performance table */
 
 .table-wrap {
@@ -665,10 +742,10 @@ button:focus-visible,
     white-space: nowrap;
 }
 
-.neighbor-bar {
-    display: flex;
-    align-items: center;
-    gap: var(--space-1);
+.card-liked {
+    margin-top: auto;
+    color: var(--color-text-secondary);
+    font-size: 0.9rem;
 }
 
 .neighbor-bar-track {
@@ -706,7 +783,61 @@ button:focus-visible,
 }
 
 .why-panel summary {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
     cursor: pointer;
+    list-style: none;
+    color: var(--color-accent);
+    font-weight: 600;
+}
+
+.why-panel summary::-webkit-details-marker {
+    display: none;
+}
+
+.why-panel summary::after {
+    content: "";
+    display: inline-block;
+    width: 0.4rem;
+    height: 0.4rem;
+    border-right: 2px solid currentColor;
+    border-bottom: 2px solid currentColor;
+    transform: rotate(-45deg);
+}
+
+.why-panel[open] summary::after {
+    transform: rotate(45deg);
+}
+
+.why-panel-body {
+    padding-top: var(--space-1);
+}
+
+.why-rows {
+    list-style: none;
+    margin: var(--space-1) 0 0;
+    padding: 0;
+}
+
+.why-row {
+    display: flex;
+    justify-content: space-between;
+    gap: var(--space-2);
+    padding: 0.25rem 0;
+    border-bottom: 1px solid var(--color-border);
+}
+
+.why-row:last-child {
+    border-bottom: none;
+}
+
+.why-row-label {
+    color: var(--color-text);
+}
+
+.why-row-value {
+    color: var(--color-text-muted);
 }
 
 .back-link {
@@ -714,12 +845,82 @@ button:focus-visible,
     text-align: center;
 }
 
+/* Motion: every rule below is scoped inside a prefers-reduced-motion
+   check, so a visitor who has asked for less motion sees the final
+   state directly with no animation at all — never the animation's
+   starting (hidden/unfilled) frame. */
+
+@keyframes card-fade-in {
+    from {
+        opacity: 0;
+        transform: translateY(12px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes bar-fill {
+    from {
+        transform: scaleX(0);
+    }
+    to {
+        transform: scaleX(1);
+    }
+}
+
+@keyframes panel-fade-in {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+    .card {
+        animation: card-fade-in 350ms ease-out both;
+        transition: transform 150ms ease-out;
+    }
+
+    .card:nth-child(1) { animation-delay: 0ms; }
+    .card:nth-child(2) { animation-delay: 25ms; }
+    .card:nth-child(3) { animation-delay: 50ms; }
+    .card:nth-child(4) { animation-delay: 75ms; }
+    .card:nth-child(5) { animation-delay: 100ms; }
+    .card:nth-child(6) { animation-delay: 125ms; }
+    .card:nth-child(7) { animation-delay: 150ms; }
+    .card:nth-child(8) { animation-delay: 175ms; }
+    .card:nth-child(9) { animation-delay: 200ms; }
+    .card:nth-child(n + 10) { animation-delay: 225ms; }
+
+    .card:hover,
+    .card:focus-within {
+        transform: translateY(-4px);
+    }
+
+    .similarity-fill,
+    .neighbor-bar-fill {
+        transform-origin: left;
+        animation: bar-fill 500ms ease-out both;
+    }
+
+    .why-panel[open] .why-panel-body {
+        animation: panel-fade-in 200ms ease-out both;
+    }
+
+    .why-panel summary::after {
+        transition: transform 150ms ease-out;
+    }
+}
+
 /* Mobile */
 
 @media (max-width: 640px) {
     .panels,
     .cards,
-    .stat-strip,
     .steps {
         grid-template-columns: 1fr;
     }

@@ -201,7 +201,6 @@ def _base_record(label: str, movie_catalog: pd.DataFrame) -> dict:
         "movie_id": int(row["movie_id"]),
         "movie_title": row["movie_title"],
         "genre": row["genre"],
-        "release_date": row["release_date"],
     }
 
 

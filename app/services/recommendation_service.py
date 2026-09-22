@@ -74,7 +74,6 @@ class BrowseFilm:
     movie_id: int
     movie_title: str
     genre: str
-    release_year: int | None
     mean_rating: float
     rating_count: int
 
@@ -277,7 +276,6 @@ class Recommendation:
                 movie_id=int(row.movie_id),
                 movie_title=row.movie_title,
                 genre=row.genre,
-                release_year=row.release_date.year if row.release_date else None,
                 mean_rating=round(float(row.mean_rating), 2),
                 rating_count=int(row.rating_count),
             )

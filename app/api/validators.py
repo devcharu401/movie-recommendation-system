@@ -7,15 +7,18 @@ from app.api.errors import ValidationError
 
 def validate_user_id(raw_value: str | None, known_user_ids: Iterable[int]) -> int:
     """Input Validation Entity (spec 13.5): user_id must be a whole number
-    present in the dataset."""
+    present in the dataset. The upper bound named in the error message is
+    read from known_user_ids itself, not a literal, so it always matches
+    the loaded model."""
     if raw_value is None or not str(raw_value).strip():
-        raise ValidationError("Please enter a user ID.")
+        raise ValidationError("Please enter a viewer ID.")
     try:
         user_id = int(str(raw_value).strip())
     except ValueError:
-        raise ValidationError("User ID must be a whole number.") from None
-    if user_id not in set(known_user_ids):
-        raise ValidationError(f"User ID {user_id} is not in the dataset.")
+        raise ValidationError("Viewer ID must be a number.") from None
+    known = set(known_user_ids)
+    if user_id not in known:
+        raise ValidationError(f"There is no viewer {user_id}. Viewer IDs run from 1 to {max(known)}.")
     return user_id
 
 
@@ -23,10 +26,10 @@ def validate_movie_title(raw_value: str | None, known_titles: Iterable[str]) -> 
     """Input Validation Entity (spec 13.5): movie_title must exist in the
     filtered recommendable set."""
     if raw_value is None or not str(raw_value).strip():
-        raise ValidationError("Please enter a movie title.")
+        raise ValidationError("Please enter a film title.")
     title = str(raw_value).strip()
     if title not in set(known_titles):
-        raise ValidationError(f'"{title}" is not in the recommendable movie set.')
+        raise ValidationError(f'We couldn\'t find "{title}". Pick a title from the suggestions as you type.')
     return title
 
 

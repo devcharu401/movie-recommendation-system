@@ -29,32 +29,32 @@
     <h2>Built on</h2>
     <div class="stat-strip">
         <div class="stat">
-            <span class="stat-value">{{ stats.raw_viewers }}</span>
-            {% if stats.modelled_viewers != stats.raw_viewers %}
-            <span class="stat-modelled">{{ stats.modelled_viewers }} modelled</span>
-            {% endif %}
+            <span class="stat-value">{{ "{:,}".format(stats.raw_viewers) }}</span>
             <span class="stat-label">Viewers</span>
+            {% if stats.modelled_viewers != stats.raw_viewers %}
+            <span class="stat-modelled">{{ "{:,}".format(stats.modelled_viewers) }} modelled</span>
+            {% endif %}
         </div>
         <div class="stat">
-            <span class="stat-value">{{ stats.raw_films }}</span>
-            {% if stats.modelled_films != stats.raw_films %}
-            <span class="stat-modelled">{{ stats.modelled_films }} modelled</span>
-            {% endif %}
+            <span class="stat-value">{{ "{:,}".format(stats.raw_films) }}</span>
             <span class="stat-label">Films</span>
+            {% if stats.modelled_films != stats.raw_films %}
+            <span class="stat-modelled">{{ "{:,}".format(stats.modelled_films) }} modelled</span>
+            {% endif %}
         </div>
         <div class="stat">
-            <span class="stat-value">{{ stats.raw_ratings }}</span>
-            {% if stats.modelled_ratings != stats.raw_ratings %}
-            <span class="stat-modelled">{{ stats.modelled_ratings }} modelled</span>
-            {% endif %}
+            <span class="stat-value">{{ "{:,}".format(stats.raw_ratings) }}</span>
             <span class="stat-label">Ratings</span>
+            {% if stats.modelled_ratings != stats.raw_ratings %}
+            <span class="stat-modelled">{{ "{:,}".format(stats.modelled_ratings) }} modelled</span>
+            {% endif %}
         </div>
         <div class="stat">
-            <span class="stat-value">{{ stats.raw_genres }}</span>
-            {% if stats.modelled_genres != stats.raw_genres %}
-            <span class="stat-modelled">{{ stats.modelled_genres }} modelled</span>
-            {% endif %}
+            <span class="stat-value">{{ "{:,}".format(stats.raw_genres) }}</span>
             <span class="stat-label">Genres</span>
+            {% if stats.modelled_genres != stats.raw_genres %}
+            <span class="stat-modelled">{{ "{:,}".format(stats.modelled_genres) }} modelled</span>
+            {% endif %}
         </div>
     </div>
     <p class="stat-range">
@@ -67,7 +67,7 @@
     <section class="panel">
         <h2>I have a viewer ID</h2>
         <p class="helper">Films picked from people who watch like you</p>
-        <form method="post" action="{{ url_for('api.recommend_user') }}">
+        <form method="post" action="{{ url_for('api.recommend_user') }}#start">
             <div class="field">
                 <label for="user_id" class="helper">Enter a user ID from the dataset (1-{{ max_user_id }})</label>
                 <input type="number" id="user_id" name="user_id" min="1" max="{{ max_user_id }}" required>
@@ -79,7 +79,7 @@
     <section class="panel">
         <h2>I loved a film</h2>
         <p class="helper">Find others with the same feel</p>
-        <form method="post" action="{{ url_for('api.recommend_movie') }}">
+        <form method="post" action="{{ url_for('api.recommend_movie') }}#start">
             <div class="field">
                 <label for="movie_title" class="helper">Enter a movie title</label>
                 <input type="text" id="movie_title" name="movie_title" list="movie-titles" required>

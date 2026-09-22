@@ -2,10 +2,32 @@
 {% block title %}Recommendations{% endblock %}
 {% block content %}
 <h2>Recommendations for viewer {{ user_id }}</h2>
-<section class="profile">
-    <h3>Viewer profile</h3>
-    <p>{{ profile.age_band }}{% if profile.occupation %} &middot; {{ profile.occupation }}{% endif %}</p>
-    <p>{{ profile.films_rated }} films rated &middot; average rating {{ profile.mean_rating }} &#9733;</p>
+{% if results %}
+<p class="result-count">Showing {{ results|length }} recommendation{{ 's' if results|length != 1 }}.</p>
+{% endif %}
+
+<section class="profile-card">
+    <h3>Your taste profile</h3>
+    <dl class="fact-row">
+        <div class="fact">
+            <dt>Age band</dt>
+            <dd>{{ profile.age_band }}</dd>
+        </div>
+        {% if profile.occupation %}
+        <div class="fact">
+            <dt>Occupation</dt>
+            <dd>{{ profile.occupation }}</dd>
+        </div>
+        {% endif %}
+        <div class="fact">
+            <dt>Films rated</dt>
+            <dd>{{ profile.films_rated }}</dd>
+        </div>
+        <div class="fact">
+            <dt>Usual rating</dt>
+            <dd>{{ profile.mean_rating }} &#9733;</dd>
+        </div>
+    </dl>
     {% if profile.top_genres %}
     <div class="genre-pills">
         {% for genre in profile.top_genres %}
@@ -14,21 +36,23 @@
     </div>
     {% endif %}
 </section>
-<section class="profile">
+
+<section class="profile-card">
     <h3>Closest viewers</h3>
-    <p>These are the viewers whose ratings were compared with yours using cosine similarity to build this list.</p>
+    <p class="helper">These are the viewers whose ratings were compared with yours using cosine similarity to build this list.</p>
     {% if neighbors %}
-    <ul>
+    <ul class="neighbor-list">
         {% for neighbor in neighbors %}
-        <li>
-            <div class="neighbor-bar">
+        <li class="neighbor-item">
+            <div class="neighbor-row">
+                <span class="neighbor-label">Viewer {{ neighbor.user_id }}</span>
                 <div class="neighbor-bar-track">
                     <div class="neighbor-bar-fill" style="width: {{ (neighbor.similarity * 100)|round(1) }}%;"></div>
                 </div>
-                <span class="similarity-value">Viewer {{ neighbor.user_id }} &mdash; {{ "%.3f"|format(neighbor.similarity) }}</span>
+                <span class="neighbor-value">{{ "%.3f"|format(neighbor.similarity) }}</span>
             </div>
             {% if neighbor.top_rated_movies %}
-            <p>also rated highly: {{ neighbor.top_rated_movies[:3]|join(', ') }}</p>
+            <p class="neighbor-detail">also rated highly: {{ neighbor.top_rated_movies[:3]|join(', ') }}</p>
             {% endif %}
         </li>
         {% endfor %}
@@ -37,7 +61,8 @@
     <p>No neighbour data available for this user.</p>
     {% endif %}
 </section>
-<section class="profile">
+
+<section class="profile-card">
     <h3>Genre affinity</h3>
     <p>"Your ratings" is each genre's share of the films you've rated; "Your recommendations" is each genre's share of your ten recommended films. Films can belong to several genres, so each series can add up to more than 100%.</p>
     <img
@@ -46,11 +71,11 @@
         class="affinity-chart"
     >
 </section>
+
 {% if results %}
-<p class="result-count">Showing {{ results|length }} recommendation{{ 's' if results|length != 1 }}.</p>
 <div class="cards">
     {% for movie in results %}
-    {% set similarity_display = "%.3f"|format(movie.similarity) %}
+    {% set movie_neighbor_ratings = contributing_ratings.get(movie.movie_id, []) %}
     <article class="card">
         <h3 class="card-title"><a href="{{ url_for('api.recommend_movie_by_title', movie_title=movie.movie_title) }}">{{ movie.movie_title }}</a></h3>
         <div class="genre-pills">
@@ -58,24 +83,25 @@
             <span class="pill">{{ genre }}</span>
             {% endfor %}
         </div>
-        <div class="similarity" title="Cosine similarity between this user and the neighbouring user whose ratings surfaced this recommendation.">
-            <div class="similarity-track">
-                <div class="similarity-fill" style="width: {{ (similarity_display|float * 100)|round(1) }}%;"></div>
-            </div>
-            <span class="similarity-value">Similarity {{ similarity_display }}</span>
+        <div class="card-liked" title="How many of your closest viewers rated this film highly.">
+            Liked by {{ movie_neighbor_ratings|length }} of your {{ neighbors|length }} closest viewers
         </div>
         <div class="card-footer" title="Combines how highly similar users rated this movie with how widely it has been rated overall.">Relevance score: {{ "%.3f"|format(movie.rank_score) }}</div>
-        {% set movie_neighbor_ratings = contributing_ratings.get(movie.movie_id, []) %}
         <details class="why-panel">
             <summary>Why this one</summary>
-            <p>{{ movie_neighbor_ratings|length }} of the {{ neighbors|length }} closest viewers rated this highly.</p>
-            {% if movie_neighbor_ratings %}
-            <ul>
-                {% for entry in movie_neighbor_ratings %}
-                <li>Viewer {{ entry.neighbor_id }} rated it {{ entry.rating }}</li>
-                {% endfor %}
-            </ul>
-            {% endif %}
+            <div class="why-panel-body">
+                <p>{{ movie_neighbor_ratings|length }} of the {{ neighbors|length }} closest viewers rated this highly.</p>
+                {% if movie_neighbor_ratings %}
+                <ul class="why-rows">
+                    {% for entry in movie_neighbor_ratings %}
+                    <li class="why-row">
+                        <span class="why-row-label">Viewer {{ entry.neighbor_id }}</span>
+                        <span class="why-row-value">rated it {{ entry.rating }}</span>
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% endif %}
+            </div>
         </details>
     </article>
     {% endfor %}
@@ -83,5 +109,5 @@
 {% else %}
 <p>No recommendations found — none of this viewer's closest neighbours had a highly-rated film left to suggest.</p>
 {% endif %}
-<p class="back-link"><a href="{{ url_for('api.index') }}" class="button button-secondary">Try another viewer ID</a></p>
+<p class="back-link"><a href="{{ url_for('api.index') }}" class="button button-outline">Try another viewer ID</a></p>
 {% endblock %}

@@ -28,9 +28,6 @@
     {% for movie in films %}
     <article class="card">
         <h3 class="card-title"><a href="{{ url_for('api.recommend_movie_by_title', movie_title=movie.movie_title) }}">{{ movie.movie_title }}</a></h3>
-        {% if movie.release_year %}
-        <p class="card-year">{{ movie.release_year }}</p>
-        {% endif %}
         <div class="genre-pills">
             {% for genre in movie.genre.split('|') if genre %}
             <span class="pill">{{ genre }}</span>

@@ -1,9 +1,10 @@
 {% extends "base.html" %}
 {% block title %}Similar films{% endblock %}
 {% block content %}
-<h2>Films similar to "{{ movie_title }}"</h2>
+<h2>Films similar to &ldquo;{{ movie_title }}&rdquo;</h2>
 {% if results %}
 <p class="result-count">Showing {{ results|length }} similar film{{ 's' if results|length != 1 }}.</p>
+<p class="helper">Films are matched by who rated them, not by what they're about &mdash; these are the films most often rated alongside {{ movie_title }} by the same viewers.</p>
 <div class="cards">
     {% for movie in results %}
     {% set similarity_display = "%.3f"|format(movie.similarity) %}
