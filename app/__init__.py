@@ -30,6 +30,7 @@ def create_app(config_name: str = "development", load_recommendation_service: bo
             app.config["SIMILAR_USERS_COUNT"],
             app.config["TOP_N_RECOMMENDATIONS"],
             app.config["FIGURES_DIR"],
+            app.config["GENERATED_DIR"],
         )
 
     app.register_blueprint(api_bp)

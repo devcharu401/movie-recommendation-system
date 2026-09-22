@@ -9,8 +9,14 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
+from matplotlib.ticker import PercentFormatter
 
 sns.set_theme(style="whitegrid")
+
+AFFINITY_TEXT_COLOR = "#f3ece1"
+AFFINITY_GRID_COLOR = "#b4a89a"
+AFFINITY_VIEWER_COLOR = "#7a93a8"
+AFFINITY_RECOMMENDATION_COLOR = "#e63950"
 
 
 def plot_rating_distribution(merged: pd.DataFrame, figures_dir: Path) -> Path:
@@ -46,6 +52,46 @@ def plot_top_rated_movies(merged: pd.DataFrame, figures_dir: Path, top_n: int) -
     return _save(fig, figures_dir / "top_rated_movies.png")
 
 
+def plot_genre_affinity(affinity: pd.DataFrame, output_path: Path) -> Path:
+    """Viewer genre mix vs. recommendation genre mix (spec 13.5, user-based
+    results page). affinity has one row per genre and columns "genre",
+    "Your ratings", "Your recommendations" (percentages, prepared by the
+    caller). Styled for the dark results page rather than the report's
+    default seaborn theme: transparent background, light text, no title —
+    the page's own heading covers that."""
+    melted = affinity.melt(id_vars="genre", var_name="series", value_name="share")
+    fig, ax = plt.subplots(figsize=(7, 0.45 * len(affinity) + 1.5))
+    sns.barplot(
+        data=melted,
+        y="genre",
+        x="share",
+        hue="series",
+        hue_order=["Your ratings", "Your recommendations"],
+        palette={"Your ratings": AFFINITY_VIEWER_COLOR, "Your recommendations": AFFINITY_RECOMMENDATION_COLOR},
+        ax=ax,
+    )
+
+    ax.set_xlabel("Share of films")
+    ax.set_ylabel("")
+    ax.xaxis.set_major_formatter(PercentFormatter(xmax=100))
+    ax.tick_params(colors=AFFINITY_TEXT_COLOR)
+    ax.xaxis.label.set_color(AFFINITY_TEXT_COLOR)
+    ax.grid(False)
+    ax.xaxis.grid(True, color=AFFINITY_GRID_COLOR, alpha=0.25)
+    for spine in ax.spines.values():
+        spine.set_visible(False)
+
+    legend = ax.legend(loc="lower center", bbox_to_anchor=(0.5, 1.02), ncol=2, frameon=False)
+    legend.set_title(None)
+    for text in legend.get_texts():
+        text.set_color(AFFINITY_TEXT_COLOR)
+
+    fig.patch.set_alpha(0)
+    ax.patch.set_alpha(0)
+    fig.tight_layout()
+    return _save(fig, output_path, transparent=True)
+
+
 def generate_all_figures(merged: pd.DataFrame, figures_dir: Path, top_n: int) -> list[Path]:
     """Visualization entity behind Recommendation.visualize() (spec 11.5,
     13.6): produces the report's figures from the current dataset."""
@@ -57,7 +103,10 @@ def generate_all_figures(merged: pd.DataFrame, figures_dir: Path, top_n: int) ->
     ]
 
 
-def _save(fig: plt.Figure, path: Path) -> Path:
-    fig.savefig(path, bbox_inches="tight")
+def _save(fig: plt.Figure, path: Path, *, transparent: bool = False) -> Path:
+    # format is explicit, not inferred from path's suffix: the caching
+    # temp-file-then-rename pattern saves to a ".png.tmp" path, whose
+    # trailing extension isn't a format matplotlib recognises.
+    fig.savefig(path, format="png", bbox_inches="tight", transparent=transparent)
     plt.close(fig)
     return path

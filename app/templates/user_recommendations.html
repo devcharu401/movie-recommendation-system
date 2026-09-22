@@ -37,6 +37,15 @@
     <p>No neighbour data available for this user.</p>
     {% endif %}
 </section>
+<section class="profile">
+    <h3>Genre affinity</h3>
+    <p>"Your ratings" is each genre's share of the films you've rated; "Your recommendations" is each genre's share of your ten recommended films. Films can belong to several genres, so each series can add up to more than 100%.</p>
+    <img
+        src="{{ genre_affinity_chart_url }}"
+        alt="Bar chart comparing the genre mix of user {{ user_id }}'s rated films against the genre mix of their recommended films"
+        class="affinity-chart"
+    >
+</section>
 {% if results %}
 <div class="cards">
     {% for movie in results %}

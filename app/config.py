@@ -34,6 +34,7 @@ class Config:
     SIMILAR_USERS_COUNT = int(os.environ.get("SIMILAR_USERS_COUNT", 5))
     MODELS_DIR = BASE_DIR / "models"
     FIGURES_DIR = BASE_DIR / "reports" / "figures"
+    GENERATED_DIR = BASE_DIR / "app" / "static" / "generated"
 
 
 class DevelopmentConfig(Config):

@@ -4,17 +4,19 @@ from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
 
+import pandas as pd
 from sklearn.neighbors import NearestNeighbors
 
 from app.ml.knn_engine import Neighbor, NeighborRating, recommend_item_based, recommend_user_based
 from app.repositories.rating_repository import get_dataset_statistics, get_user_genre_distribution
 from app.repositories.user_repository import get_user_profile
 from app.services.model_trainer import ModelArtifacts, ModelTrainer
-from app.services.visualization_service import generate_all_figures
+from app.services.visualization_service import generate_all_figures, plot_genre_affinity
 
 NO_OCCUPATION_RECORDED = "none"
 TOP_GENRE_COUNT = 3
 BROWSE_TOP_N = 12
+AFFINITY_TOP_VIEWER_GENRES = 6
 
 
 def _age_band(age: int) -> str:
@@ -115,11 +117,13 @@ class Recommendation:
         similar_users_count: int,
         top_n_recommendations: int,
         figures_dir: Path,
+        generated_dir: Path,
     ) -> None:
         self._trainer = trainer
         self._similar_users_count = similar_users_count
         self._top_n_recommendations = top_n_recommendations
         self._figures_dir = figures_dir
+        self._generated_dir = generated_dir
 
         self._apply(self._load_artifacts())
 
@@ -287,3 +291,45 @@ class Recommendation:
             mean_rating=round(facts["mean_rating"], 1),
             top_genres=top_genres,
         )
+
+    def genre_affinity_chart(self, user_id: int, recommendations: list[dict]) -> Path:
+        """Genre affinity chart for the user-based results page (spec
+        13.5): the viewer's genre mix against their recommendations' genre
+        mix. One PNG per user id, cached under GENERATED_DIR — a user's
+        recommendations only change when the model is retrained, so
+        re-rendering on every request would be wasted work. Written to a
+        temporary file and renamed into place so a concurrent request
+        never reads a half-written image."""
+        path = self._generated_dir / f"genre_affinity_{user_id}.png"
+        if path.exists():
+            return path
+
+        viewer_distribution = get_user_genre_distribution(user_id)
+        viewer_share = {entry["genre"]: entry["share"] for entry in viewer_distribution}
+        top_viewer_genres = {entry["genre"] for entry in viewer_distribution[:AFFINITY_TOP_VIEWER_GENRES]}
+
+        recommendation_genres = [
+            genre for movie in recommendations for genre in movie["genre"].split("|") if genre
+        ]
+        recommendation_share = {
+            genre: recommendation_genres.count(genre) / len(recommendations)
+            for genre in set(recommendation_genres)
+        }
+
+        genres = sorted(
+            top_viewer_genres | set(recommendation_share),
+            key=lambda genre: (-viewer_share.get(genre, 0.0), genre),
+        )
+        affinity = pd.DataFrame(
+            {
+                "genre": genres,
+                "Your ratings": [viewer_share.get(genre, 0.0) * 100 for genre in genres],
+                "Your recommendations": [recommendation_share.get(genre, 0.0) * 100 for genre in genres],
+            }
+        )
+
+        self._generated_dir.mkdir(parents=True, exist_ok=True)
+        temp_path = path.with_suffix(".png.tmp")
+        plot_genre_affinity(affinity, temp_path)
+        temp_path.replace(path)
+        return path

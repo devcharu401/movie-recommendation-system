@@ -1,6 +1,8 @@
 from __future__ import annotations
 
-from flask import Blueprint, current_app, jsonify, render_template, request
+from pathlib import Path
+
+from flask import Blueprint, current_app, jsonify, render_template, request, url_for
 
 from app.api.page_context import landing_page_context
 from app.api.validators import validate_genre, validate_movie_title, validate_user_id
@@ -24,6 +26,8 @@ def recommend_user():
     user_id = validate_user_id(request.form.get("user_id"), service.known_user_ids())
     result = service.recommend(user_id=user_id)
     profile = service.viewer_profile(user_id)
+    chart_path = service.genre_affinity_chart(user_id, result.recommendations)
+    chart_url = url_for("static", filename=chart_path.relative_to(Path(current_app.static_folder)).as_posix())
     return render_template(
         "user_recommendations.html",
         user_id=user_id,
@@ -31,6 +35,7 @@ def recommend_user():
         profile=profile,
         neighbors=result.neighbors,
         contributing_ratings=result.contributing_neighbor_ratings,
+        genre_affinity_chart_url=chart_url,
     )
 
 
