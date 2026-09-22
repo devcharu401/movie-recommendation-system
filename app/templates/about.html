@@ -1,0 +1,144 @@
+{% extends "base.html" %}
+{% block title %}About{% endblock %}
+{% block content %}
+<h2>About this system</h2>
+
+<section class="profile">
+    <h3>What it does</h3>
+    <p>
+        This system suggests films you might like, based on how you and other viewers have rated films in the
+        past. Tell it a viewer ID or a film you enjoyed, and it finds patterns in the ratings data to surface
+        films you haven't seen yet. It doesn't look at plot, cast or genre to make its suggestions — only at
+        rating patterns.
+    </p>
+</section>
+
+{% include "_how_it_works.html" %}
+
+<section class="profile">
+    <h3>The data</h3>
+    <p>
+        The system is built on MovieLens 100K, a public ratings dataset from GroupLens Research at the
+        University of Minnesota: {{ stats.raw_viewers }} viewers, {{ stats.raw_films }} films and
+        {{ stats.raw_ratings }} ratings, collected {{ stats.earliest_rating.strftime('%B %Y') }} to
+        {{ stats.latest_rating.strftime('%B %Y') }}. Films rated by fewer than {{ min_ratings }} viewers are
+        excluded, so there's enough rating history behind every recommendation.
+    </p>
+</section>
+
+<section class="profile">
+    <h3>The method</h3>
+    <p>
+        The system uses collaborative filtering: it recommends films from patterns in how viewers rate them,
+        not from the films' own content. Two versions run side by side. User-based filtering compares your
+        ratings with every other viewer's, using a measure called cosine similarity to find the viewers whose
+        taste is closest to yours, then recommends the films they rated highly. Item-based filtering compares
+        films the same way — by who rated them alike — and recommends films with a rating pattern similar to
+        one you name. Both look only at a handful of the closest matches rather than the whole dataset, a
+        technique called k-nearest neighbours.
+    </p>
+</section>
+
+<section class="profile">
+    <h3>How well it performs</h3>
+    {% if performance %}
+    {% set live_result = performance.results | selectattr('neighbor_count', 'equalto', live_k) | first %}
+    <div class="stat-strip">
+        <div class="stat">
+            <span class="stat-value">{{ (live_result.precision_at_k * 100)|round(1) }}%</span>
+            <span class="stat-label">Precision@{{ performance.top_n }}</span>
+            <p class="stat-note">Of the {{ performance.top_n }} films recommended to a viewer, this share were
+                ones they went on to rate highly.</p>
+        </div>
+        <div class="stat">
+            <span class="stat-value">{{ (live_result.recall_at_k * 100)|round(1) }}%</span>
+            <span class="stat-label">Recall@{{ performance.top_n }}</span>
+            <p class="stat-note">Of the films a viewer rated highly in the held-out data, this share was
+                actually surfaced in their {{ performance.top_n }} recommendations.</p>
+        </div>
+        <div class="stat">
+            <span class="stat-value">{{ (live_result.coverage * 100)|round(1) }}%</span>
+            <span class="stat-label">Coverage</span>
+            <p class="stat-note">This share of the recommendable catalogue showed up in at least one sampled
+                viewer's list.</p>
+        </div>
+        <div class="stat">
+            <span class="stat-value">{{ (performance.sparsity * 100)|round(1) }}%</span>
+            <span class="stat-label">Sparsity</span>
+            <p class="stat-note">This share of viewer-film pairs carry no rating at all — before the
+                k-nearest-neighbours models are fitted, that grid is converted to a compressed sparse
+                matrix so the empty cells aren't stored explicitly.</p>
+        </div>
+    </div>
+
+    <div class="table-wrap">
+        <table class="k-table">
+            <thead>
+                <tr>
+                    <th>Neighbours (k)</th>
+                    <th>Precision@{{ performance.top_n }}</th>
+                    <th>Recall@{{ performance.top_n }}</th>
+                    <th>Coverage</th>
+                    <th>Viewers with ground truth</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for result in performance.results %}
+                <tr class="{% if result.neighbor_count == live_k %}k-table-active{% endif %}">
+                    <td>{{ result.neighbor_count }}{% if result.neighbor_count == live_k %} <span class="pill">in use</span>{% endif %}</td>
+                    <td>{{ (result.precision_at_k * 100)|round(1) }}%</td>
+                    <td>{{ (result.recall_at_k * 100)|round(1) }}%</td>
+                    <td>{{ (result.coverage * 100)|round(1) }}%</td>
+                    <td>{{ result.evaluated_users }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <p>
+        Larger neighbourhoods raise precision slightly but recommend a narrower set of films, which is why the
+        system uses the smaller value.
+    </p>
+    <p class="helper">
+        Measured on an 80/20 random split of the ratings ({{ performance.train_rows }} training /
+        {{ performance.test_rows }} held-out) — a film counts as relevant if the viewer rated it
+        {{ relevance_threshold }} or higher in the held-out 20%, on a seeded sample of
+        {{ performance.sample_size }} viewers, of whom those with no relevant held-out films are skipped.
+    </p>
+    <p class="helper">Item-based recommendations are not evaluated separately — these metrics cover the user-based path only.</p>
+    {% else %}
+    <p class="error">Performance metrics are unavailable. Run scripts/train_model.py to generate them.</p>
+    {% endif %}
+</section>
+
+<section class="profile">
+    <h3>Where it falls short</h3>
+    <ul>
+        <li>A new viewer with no ratings yet can't be matched to anyone — there's nothing to compare.</li>
+        <li>Most viewers have rated only a small share of the catalogue, so many comparisons rest on limited overlap.</li>
+        <li>Recommendation scores are summed across neighbours, so films liked a little by many neighbours can outrank films loved deeply by a few.</li>
+        <li>The catalogue is MovieLens 100K, which ends in 1998 — nothing more recent is in the system.</li>
+    </ul>
+</section>
+
+<section class="profile">
+    <h3>What's next</h3>
+    <ul>
+        <li>Viewer accounts and live rating capture.</li>
+        <li>Poster art.</li>
+        <li>Streaming availability.</li>
+        <li>Measuring item-based recommendations, not just user-based.</li>
+        <li>Matrix factorisation alongside KNN.</li>
+    </ul>
+</section>
+
+<section class="profile">
+    <h3>Credits</h3>
+    <p class="helper">
+        F. Maxwell Harper and Joseph A. Konstan. 2015. The MovieLens Datasets: History and Context. ACM
+        Transactions on Interactive Intelligent Systems 5, 4, Article 19.
+    </p>
+</section>
+
+<p class="back-link"><a href="{{ url_for('api.index') }}" class="button button-secondary">Back to form</a></p>
+{% endblock %}

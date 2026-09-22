@@ -7,7 +7,8 @@ from pathlib import Path
 import pandas as pd
 from sklearn.neighbors import NearestNeighbors
 
-from app.ml.knn_engine import Neighbor, NeighborRating, recommend_item_based, recommend_user_based
+from app.ml.evaluation import EvaluationReport
+from app.ml.knn_engine import HIGH_RATING_THRESHOLD, Neighbor, NeighborRating, recommend_item_based, recommend_user_based
 from app.repositories.rating_repository import get_dataset_statistics, get_user_genre_distribution
 from app.repositories.user_repository import get_user_profile
 from app.services.model_trainer import ModelArtifacts, ModelTrainer
@@ -223,6 +224,18 @@ class Recommendation:
             earliest_rating=raw["earliest_rating"],
             latest_rating=raw["latest_rating"],
         )
+
+    def performance_report(self) -> EvaluationReport | None:
+        """Persisted evaluation results for the About page (spec 10), or
+        None if scripts/train_model.py has not produced one yet — the page
+        then shows metrics as unavailable rather than erroring."""
+        return self._trainer.load_evaluation()
+
+    def relevance_threshold(self) -> int:
+        """Minimum held-out rating that counts as 'relevant' in the
+        evaluation metrics (spec 10) — the same threshold the recommender
+        itself uses for a 'highly rated' movie."""
+        return HIGH_RATING_THRESHOLD
 
     def browse_genres(self) -> list[GenreTile]:
         """Genre tiles for the Browse page (spec 13.5), one per genre found

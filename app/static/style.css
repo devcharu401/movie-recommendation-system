@@ -116,6 +116,11 @@ header {
     color: var(--color-accent-strong);
 }
 
+.site-nav {
+    display: flex;
+    gap: var(--space-2);
+}
+
 .site-nav a {
     color: var(--color-text-muted);
     text-decoration: none;
@@ -164,6 +169,12 @@ header {
     margin-top: var(--space-1);
     font-size: 0.85rem;
     color: var(--color-text-muted);
+}
+
+.stat-note {
+    margin: var(--space-1) 0 0;
+    color: var(--color-text-muted);
+    font-size: 0.8rem;
 }
 
 .stat-range {
@@ -352,6 +363,36 @@ button:focus,
     margin: 0;
     color: var(--color-text-muted);
     font-size: 0.85rem;
+}
+
+/* Performance table */
+
+.table-wrap {
+    overflow-x: auto;
+    margin-bottom: var(--space-2);
+}
+
+.k-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+}
+
+.k-table th,
+.k-table td {
+    padding: 0.5rem var(--space-1);
+    text-align: left;
+    border-bottom: 1px solid var(--color-border);
+    white-space: nowrap;
+}
+
+.k-table th {
+    color: var(--color-text-muted);
+    font-weight: 600;
+}
+
+.k-table-active {
+    background: var(--color-accent-soft);
 }
 
 /* Result card grid */

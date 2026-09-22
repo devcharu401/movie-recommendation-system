@@ -8,6 +8,7 @@ import joblib
 import pandas as pd
 from sklearn.neighbors import NearestNeighbors
 
+from app.ml.evaluation import EvaluationReport
 from app.ml.feature_builder import (
     build_movie_catalog,
     build_movie_features,
@@ -28,6 +29,8 @@ ARTIFACT_FILES = {
     "user_model": "user_model.joblib",
     "movie_model": "movie_model.joblib",
 }
+
+EVALUATION_REPORT_FILE = "evaluation_report.joblib"
 
 
 @dataclass
@@ -86,3 +89,19 @@ class ModelTrainer:
             path = self._models_dir / filename
             joblib.dump(getattr(artifacts, name), path)
             logger.info("wrote %s", path)
+
+    def persist_evaluation(self, report: EvaluationReport) -> None:
+        """Stores the evaluation report (spec 10) alongside the model
+        artifacts. Kept separate from ARTIFACT_FILES/load(): the report is
+        optional evidence for the About page, not something recommend()
+        depends on, so a missing report must not fail app startup."""
+        self._models_dir.mkdir(parents=True, exist_ok=True)
+        path = self._models_dir / EVALUATION_REPORT_FILE
+        joblib.dump(report, path)
+        logger.info("wrote %s", path)
+
+    def load_evaluation(self) -> EvaluationReport | None:
+        path = self._models_dir / EVALUATION_REPORT_FILE
+        if not path.exists():
+            return None
+        return joblib.load(path)

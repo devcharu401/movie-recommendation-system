@@ -84,6 +84,19 @@ def browse_genre(genre):
     )
 
 
+@bp.route("/about", methods=["GET"])
+def about():
+    service = _service()
+    return render_template(
+        "about.html",
+        stats=service.dataset_statistics(),
+        performance=service.performance_report(),
+        min_ratings=current_app.config["MIN_RATINGS_PER_MOVIE"],
+        live_k=current_app.config["SIMILAR_USERS_COUNT"],
+        relevance_threshold=service.relevance_threshold(),
+    )
+
+
 @bp.route("/api/movies", methods=["GET"])
 def api_movies():
     service = _service()
