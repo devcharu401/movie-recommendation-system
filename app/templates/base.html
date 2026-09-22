@@ -2,19 +2,32 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>{% block title %}Movie Recommendation System{% endblock %}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Reelmate &mdash; {% block title %}Home{% endblock %}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
     <header>
-        <h1 class="site-title"><a href="{{ url_for('api.index') }}">Movie Recommendation System</a></h1>
+        <a href="{{ url_for('api.index') }}" class="wordmark">
+            <span class="wordmark-mark" aria-hidden="true"></span>
+            Reelmate
+        </a>
         <nav class="site-nav">
-            <a href="{{ url_for('api.browse_genres') }}">Browse</a>
-            <a href="{{ url_for('api.about') }}">About</a>
+            <a href="{{ url_for('api.index') }}"{% if request.endpoint == 'api.index' %} class="active"{% endif %}>Home</a>
+            <a href="{{ url_for('api.browse_genres') }}"{% if request.endpoint in ('api.browse_genres', 'api.browse_genre') %} class="active"{% endif %}>Browse</a>
+            <a href="{{ url_for('api.about') }}"{% if request.endpoint == 'api.about' %} class="active"{% endif %}>About</a>
         </nav>
     </header>
+    {% block hero %}{% endblock %}
     <main>
         {% block content %}{% endblock %}
     </main>
+    <footer>
+        <p>
+            Ratings data from MovieLens 100K, GroupLens Research.
+            Photo by <a href="https://unsplash.com/@felixmooneeram">Felix Mooneeram</a> on
+            <a href="https://unsplash.com">Unsplash</a>.
+        </p>
+    </footer>
 </body>
 </html>

@@ -1,5 +1,25 @@
 {% extends "base.html" %}
-{% block title %}Movie Recommendation System{% endblock %}
+{% block title %}Home{% endblock %}
+
+{% block hero %}
+<section class="hero" id="hero">
+    <div class="hero-inner">
+        <p class="hero-eyebrow">Discover &middot; Explore &middot; Enjoy</p>
+        <h1 class="hero-headline">Every film you love was once a <span class="hero-highlight">stranger</span>.</h1>
+        <p class="hero-subhead">Tell us what you've watched, or name a film you loved. We'll find the rest.</p>
+        <div class="hero-actions">
+            <a href="#start" class="button button-primary">Get started</a>
+            <a href="#how-it-works" class="button button-outline">How it works</a>
+        </div>
+        <blockquote class="hero-quote">
+            <span class="hero-quote-rule" aria-hidden="true"></span>
+            <p>&ldquo;A film is a ribbon of dreams.&rdquo;</p>
+            <cite>Orson Welles</cite>
+        </blockquote>
+    </div>
+</section>
+{% endblock %}
+
 {% block content %}
 {% if error %}
 <p class="error">{{ error }}</p>
@@ -40,13 +60,13 @@
     <p class="stat-range">
         Ratings collected {{ stats.earliest_rating.strftime('%B %Y') }} to {{ stats.latest_rating.strftime('%B %Y') }}
     </p>
+    <p class="stat-note">Films rated by fewer than {{ min_ratings }} viewers are excluded from the model.</p>
 </section>
 
-{% include "_how_it_works.html" %}
-
-<div class="panels">
+<div class="panels" id="start">
     <section class="panel">
-        <h2>User-Based Recommendations</h2>
+        <h2>I have a viewer ID</h2>
+        <p class="helper">Films picked from people who watch like you</p>
         <form method="post" action="{{ url_for('api.recommend_user') }}">
             <div class="field">
                 <label for="user_id" class="helper">Enter a user ID from the dataset (1-{{ max_user_id }})</label>
@@ -57,7 +77,8 @@
     </section>
 
     <section class="panel">
-        <h2>Item-Based Recommendations</h2>
+        <h2>I loved a film</h2>
+        <p class="helper">Find others with the same feel</p>
         <form method="post" action="{{ url_for('api.recommend_movie') }}">
             <div class="field">
                 <label for="movie_title" class="helper">Enter a movie title</label>
@@ -72,4 +93,6 @@
         </form>
     </section>
 </div>
+
+{% include "_how_it_works.html" %}
 {% endblock %}

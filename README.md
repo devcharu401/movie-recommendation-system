@@ -155,3 +155,12 @@ Blueprint in the Render dashboard pointing at it; Render reads
 All CSS in `app/static/style.css` is original and hand-written for this
 project. The BootstrapMade "Tempo" theme (or any other third-party theme
 or CSS framework) is not used anywhere in this codebase.
+
+## Credits
+
+F. Maxwell Harper and Joseph A. Konstan. 2015. The MovieLens Datasets:
+History and Context. ACM Transactions on Interactive Intelligent
+Systems 5, 4, Article 19.
+
+Home page photo by [Felix Mooneeram](https://unsplash.com/@felixmooneeram)
+on [Unsplash](https://unsplash.com).
