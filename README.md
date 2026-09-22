@@ -116,6 +116,25 @@ This requires the database to already be populated (run
 isn't). It fits its own models on the held-out train split and does not
 need `scripts/train_model.py` to have been run.
 
+## Running the tests
+
+The automated test suite (`tests/`) uses only Python's standard-library
+`unittest` — no pytest, no coverage tool, no extra dependency:
+
+```bash
+python -m unittest discover -s tests -v
+```
+
+The tests are read-only: they never write to the database or to
+`models/`, and the one test that renders a chart does so into a
+temporary directory, never `app/static/generated/`. Most of them do
+need the database loaded and the model trained first
+(`scripts/load_database.py` then `scripts/train_model.py`); a test
+class that needs either and can't find it raises an error from
+`setUpClass` naming both scripts, so a missing precondition reports
+`FAILED`, never `OK` — it can't be mistaken for a pass. Results and
+worked examples from a real run are recorded in `docs/test_cases.md`.
+
 ## Deployment
 
 This project deploys to [Render](https://render.com) as a free-tier
