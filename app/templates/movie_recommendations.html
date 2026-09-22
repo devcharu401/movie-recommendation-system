@@ -7,7 +7,7 @@
     {% for movie in results %}
     {% set similarity_display = "%.3f"|format(movie.similarity) %}
     <article class="card">
-        <h3 class="card-title">{{ movie.movie_title }}</h3>
+        <h3 class="card-title"><a href="{{ url_for('api.recommend_movie_by_title', movie_title=movie.movie_title) }}">{{ movie.movie_title }}</a></h3>
         <div class="genre-pills">
             {% for genre in movie.genre.split('|') if genre %}
             <span class="pill">{{ genre }}</span>

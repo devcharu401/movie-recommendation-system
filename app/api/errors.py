@@ -4,6 +4,8 @@ import logging
 
 from flask import Flask, current_app, jsonify, render_template, request
 
+from app.api.page_context import landing_page_context
+
 logger = logging.getLogger(__name__)
 
 
@@ -21,10 +23,8 @@ def register_error_handlers(app: Flask) -> None:
         if request.path.startswith("/api/"):
             return jsonify(error=str(error)), 400
         service = current_app.extensions["recommendation_service"]
-        return (
-            render_template("index.html", movie_titles=service.recommendable_movie_titles(), error=str(error)),
-            400,
-        )
+        context = landing_page_context(service)
+        return render_template("index.html", error=str(error), **context), 400
 
     @app.errorhandler(404)
     def handle_not_found(error):
