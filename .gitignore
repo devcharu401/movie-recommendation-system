@@ -4,10 +4,7 @@ venv/
 __pycache__/
 *.py[cod]
 *.egg-info/
-# data/raw/ml-100k/ is committed, not downloaded: GroupLens's TLS
-# certificate is expired, so Render's build cannot fetch it itself.
-data/raw/*
-!data/raw/ml-100k/
+data/raw/
 data/processed/
 *.db
 *.sqlite3
@@ -15,6 +12,7 @@ models/*.joblib
 models/*.pkl
 reports/figures/
 app/static/generated/
+dist/
 .idea/
 .vscode/
 .DS_Store
