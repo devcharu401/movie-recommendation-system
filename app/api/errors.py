@@ -22,6 +22,11 @@ def register_error_handlers(app: Flask) -> None:
     def handle_validation_error(error: ValidationError):
         if request.path.startswith("/api/"):
             return jsonify(error=str(error)), 400
+        # Genre validation fails on a plain GET to a URL (Browse), so it
+        # reads as a bad page rather than a form to correct — the shared
+        # error page fits better there than redisplaying the landing form.
+        if request.endpoint == "api.browse_genre":
+            return render_template("error.html", status_code=400, message=str(error)), 400
         service = current_app.extensions["recommendation_service"]
         context = landing_page_context(service)
         return render_template("index.html", error=str(error), **context), 400
@@ -30,11 +35,11 @@ def register_error_handlers(app: Flask) -> None:
     def handle_not_found(error):
         if request.path.startswith("/api/"):
             return jsonify(error="not found"), 404
-        return "<h1>404</h1><p>The page you requested does not exist.</p>", 404
+        return render_template("error.html", status_code=404, message="That page doesn't exist."), 404
 
     @app.errorhandler(500)
     def handle_server_error(error):
         logger.exception("unhandled server error")
         if request.path.startswith("/api/"):
             return jsonify(error="internal server error"), 500
-        return "<h1>500</h1><p>Something went wrong. Please try again.</p>", 500
+        return render_template("error.html", status_code=500, message="Something went wrong on our side."), 500

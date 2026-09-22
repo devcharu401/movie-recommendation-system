@@ -11,7 +11,7 @@
     <a class="genre-tile{% if tile.name == selected_genre %} genre-tile-active{% endif %}"
        href="{{ url_for('api.browse_genre', genre=tile.name) }}">
         <span class="genre-tile-name">{{ tile.name }}</span>
-        <span class="genre-tile-count">{{ tile.film_count }} films</span>
+        <span class="genre-tile-count">{{ tile.film_count }} film{{ 's' if tile.film_count != 1 }}</span>
     </a>
     {% endfor %}
 </div>
@@ -33,7 +33,7 @@
             <span class="pill">{{ genre }}</span>
             {% endfor %}
         </div>
-        <div class="card-footer">Average rating {{ "%.2f"|format(movie.mean_rating) }} &#9733; &middot; rated by {{ movie.rating_count }} viewers</div>
+        <div class="card-footer">{{ "%.2f"|format(movie.mean_rating) }} &#9733; &middot; {{ movie.rating_count }} viewer{{ 's' if movie.rating_count != 1 }}</div>
     </article>
     {% endfor %}
 </div>

@@ -3,7 +3,7 @@
 {% block content %}
 <h2>About this system</h2>
 
-<section class="profile">
+<section class="profile-card">
     <h3>What it does</h3>
     <p>
         This system suggests films you might like, based on how you and other viewers have rated films in the
@@ -15,18 +15,18 @@
 
 {% include "_how_it_works.html" %}
 
-<section class="profile">
+<section class="profile-card">
     <h3>The data</h3>
     <p>
         The system is built on MovieLens 100K, a public ratings dataset from GroupLens Research at the
-        University of Minnesota: {{ stats.raw_viewers }} viewers, {{ stats.raw_films }} films and
-        {{ stats.raw_ratings }} ratings, collected {{ stats.earliest_rating.strftime('%B %Y') }} to
+        University of Minnesota: {{ "{:,}".format(stats.raw_viewers) }} viewers, {{ "{:,}".format(stats.raw_films) }} films and
+        {{ "{:,}".format(stats.raw_ratings) }} ratings, collected {{ stats.earliest_rating.strftime('%B %Y') }} to
         {{ stats.latest_rating.strftime('%B %Y') }}. Films rated by fewer than {{ min_ratings }} viewers are
         excluded, so there's enough rating history behind every recommendation.
     </p>
 </section>
 
-<section class="profile">
+<section class="profile-card">
     <h3>The method</h3>
     <p>
         The system uses collaborative filtering: it recommends films from patterns in how viewers rate them,
@@ -39,7 +39,7 @@
     </p>
 </section>
 
-<section class="profile">
+<section class="profile-card">
     <h3>How well it performs</h3>
     {% if performance %}
     {% set live_result = performance.results | selectattr('neighbor_count', 'equalto', live_k) | first %}
@@ -48,13 +48,13 @@
             <span class="stat-value">{{ (live_result.precision_at_k * 100)|round(1) }}%</span>
             <span class="stat-label">Precision@{{ performance.top_n }}</span>
             <p class="stat-note">Of the {{ performance.top_n }} films recommended to a viewer, this share were
-                ones they went on to rate highly.</p>
+                films they had rated highly in the held-out ratings.</p>
         </div>
         <div class="stat">
             <span class="stat-value">{{ (live_result.recall_at_k * 100)|round(1) }}%</span>
             <span class="stat-label">Recall@{{ performance.top_n }}</span>
-            <p class="stat-note">Of the films a viewer rated highly in the held-out data, this share was
-                actually surfaced in their {{ performance.top_n }} recommendations.</p>
+            <p class="stat-note">Of the films a viewer had rated highly in the held-out ratings, this share
+                were surfaced in their {{ performance.top_n }} recommendations.</p>
         </div>
         <div class="stat">
             <span class="stat-value">{{ (live_result.coverage * 100)|round(1) }}%</span>
@@ -111,29 +111,31 @@
     {% endif %}
 </section>
 
-<section class="profile">
-    <h3>Where it falls short</h3>
-    <ul>
-        <li>A new viewer with no ratings yet can't be matched to anyone — there's nothing to compare.</li>
-        <li>Most viewers have rated only a small share of the catalogue, so many comparisons rest on limited overlap.</li>
-        <li>Recommendation scores are summed across neighbours, so films liked a little by many neighbours can outrank films loved deeply by a few.</li>
-        <li>The catalogue is MovieLens 100K, which ends in 1998 — nothing more recent is in the system.</li>
-        <li>The dataset lists Chasing Amy (1997) twice under two IDs, so it appears twice with its ID shown to tell the entries apart.</li>
-    </ul>
-</section>
+<div class="about-columns">
+    <section class="profile-card">
+        <h3>Where it falls short</h3>
+        <ul>
+            <li>A new viewer with no ratings yet can't be matched to anyone — there's nothing to compare.</li>
+            <li>Most viewers have rated only a small share of the catalogue, so many comparisons rest on limited overlap.</li>
+            <li>Recommendation scores are summed across neighbours, so films liked a little by many neighbours can outrank films loved deeply by a few.</li>
+            <li>The catalogue is MovieLens 100K, which ends in 1998 — nothing more recent is in the system.</li>
+            <li>The dataset lists Chasing Amy (1997) twice under two IDs, so it appears twice with its ID shown to tell the entries apart.</li>
+        </ul>
+    </section>
 
-<section class="profile">
-    <h3>What's next</h3>
-    <ul>
-        <li>Viewer accounts and live rating capture.</li>
-        <li>Poster art.</li>
-        <li>Streaming availability.</li>
-        <li>Measuring item-based recommendations, not just user-based.</li>
-        <li>Matrix factorisation alongside KNN.</li>
-    </ul>
-</section>
+    <section class="profile-card">
+        <h3>What's next</h3>
+        <ul>
+            <li>Viewer accounts and live rating capture.</li>
+            <li>Poster art.</li>
+            <li>Streaming availability.</li>
+            <li>Measuring item-based recommendations, not just user-based.</li>
+            <li>Matrix factorisation alongside KNN.</li>
+        </ul>
+    </section>
+</div>
 
-<section class="profile">
+<section class="profile-card">
     <h3>Credits</h3>
     <p class="helper">
         F. Maxwell Harper and Joseph A. Konstan. 2015. The MovieLens Datasets: History and Context. ACM
@@ -145,5 +147,5 @@
     </p>
 </section>
 
-<p class="back-link"><a href="{{ url_for('api.index') }}" class="button button-secondary">Back to form</a></p>
+<p class="back-link"><a href="{{ url_for('api.index') }}" class="button button-secondary">Back to home</a></p>
 {% endblock %}

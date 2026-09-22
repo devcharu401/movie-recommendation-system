@@ -84,13 +84,13 @@
             {% endfor %}
         </div>
         <div class="card-liked" title="How many of your closest viewers rated this film highly.">
-            Liked by {{ movie_neighbor_ratings|length }} of your {{ neighbors|length }} closest viewers
+            Liked by {{ movie_neighbor_ratings|length }} of your {{ neighbors|length }} closest viewer{{ 's' if neighbors|length != 1 }}
         </div>
         <div class="card-footer" title="Combines how highly similar users rated this movie with how widely it has been rated overall.">Relevance score: {{ "%.3f"|format(movie.rank_score) }}</div>
         <details class="why-panel">
             <summary>Why this one</summary>
             <div class="why-panel-body">
-                <p>{{ movie_neighbor_ratings|length }} of the {{ neighbors|length }} closest viewers rated this highly.</p>
+                <p>{{ movie_neighbor_ratings|length }} of the {{ neighbors|length }} closest viewer{{ 's' if neighbors|length != 1 }} rated this highly.</p>
                 {% if movie_neighbor_ratings %}
                 <ul class="why-rows">
                     {% for entry in movie_neighbor_ratings %}
