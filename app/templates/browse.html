@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}Browse by Genre{% endblock %}
+{% block content %}
+{% if error %}
+<p class="error">{{ error }}</p>
+{% endif %}
+<h2>Browse by Genre</h2>
+<p class="helper">Only films rated by at least {{ min_ratings }} viewers are included.</p>
+<div class="genre-tiles">
+    {% for tile in genres %}
+    <a class="genre-tile{% if tile.name == selected_genre %} genre-tile-active{% endif %}"
+       href="{{ url_for('api.browse_genre', genre=tile.name) }}">
+        <span class="genre-tile-name">{{ tile.name }}</span>
+        <span class="genre-tile-count">{{ tile.film_count }} films</span>
+    </a>
+    {% endfor %}
+</div>
+
+{% if selected_genre %}
+<h3>Top {{ films|length }} in {{ selected_genre }}</h3>
+{% if films %}
+<div class="cards">
+    {% for movie in films %}
+    <article class="card">
+        <h3 class="card-title"><a href="{{ url_for('api.recommend_movie_by_title', movie_title=movie.movie_title) }}">{{ movie.movie_title }}</a></h3>
+        {% if movie.release_year %}
+        <p class="card-year">{{ movie.release_year }}</p>
+        {% endif %}
+        <div class="genre-pills">
+            {% for genre in movie.genre.split('|') if genre %}
+            <span class="pill">{{ genre }}</span>
+            {% endfor %}
+        </div>
+        <div class="card-footer">Average rating {{ "%.2f"|format(movie.mean_rating) }} &#9733; &middot; rated by {{ movie.rating_count }} viewers</div>
+    </article>
+    {% endfor %}
+</div>
+{% else %}
+<p>No films found in this genre.</p>
+{% endif %}
+{% endif %}
+<p class="back-link"><a href="{{ url_for('api.index') }}" class="button button-secondary">Back to form</a></p>
+{% endblock %}

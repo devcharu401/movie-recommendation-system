@@ -28,3 +28,14 @@ def validate_movie_title(raw_value: str | None, known_titles: Iterable[str]) -> 
     if title not in set(known_titles):
         raise ValidationError(f'"{title}" is not in the recommendable movie set.')
     return title
+
+
+def validate_genre(raw_value: str | None, known_genres: Iterable[str]) -> str:
+    """Input Validation Entity (spec 13.5): genre must be one of the genres
+    present in the recommendable movie catalog."""
+    if raw_value is None or not str(raw_value).strip():
+        raise ValidationError("Please choose a genre.")
+    genre = str(raw_value).strip()
+    if genre not in set(known_genres):
+        raise ValidationError(f'"{genre}" is not a genre in this dataset.')
+    return genre

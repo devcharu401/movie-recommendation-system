@@ -14,6 +14,7 @@ from app.services.visualization_service import generate_all_figures
 
 NO_OCCUPATION_RECORDED = "none"
 TOP_GENRE_COUNT = 3
+BROWSE_TOP_N = 12
 
 
 def _age_band(age: int) -> str:
@@ -52,6 +53,27 @@ class DatasetOverview:
 class GenreShare:
     genre: str
     percentage: int
+
+
+@dataclass(frozen=True)
+class GenreTile:
+    """One tile on the Browse page (spec 13.5): a genre and how many
+    recommendable films carry it."""
+
+    name: str
+    film_count: int
+
+
+@dataclass(frozen=True)
+class BrowseFilm:
+    """One film card on the Browse page (spec 13.5)."""
+
+    movie_id: int
+    movie_title: str
+    genre: str
+    release_year: int | None
+    mean_rating: float
+    rating_count: int
 
 
 @dataclass(frozen=True)
@@ -197,6 +219,49 @@ class Recommendation:
             earliest_rating=raw["earliest_rating"],
             latest_rating=raw["latest_rating"],
         )
+
+    def browse_genres(self) -> list[GenreTile]:
+        """Genre tiles for the Browse page (spec 13.5), one per genre found
+        in the recommendable movie catalog — the same filtered set the KNN
+        models are trained on, so a tile's count always matches what
+        browse_by_genre() lists for it, with no separate SQL re-filter."""
+        counts: dict[str, int] = {}
+        for combination in self._movie_catalog["genre"]:
+            if not combination:
+                continue
+            for genre in combination.split("|"):
+                counts[genre] = counts.get(genre, 0) + 1
+        return sorted(
+            (GenreTile(name=genre, film_count=count) for genre, count in counts.items()),
+            key=lambda tile: tile.name,
+        )
+
+    def browse_by_genre(self, genre: str) -> list[BrowseFilm]:
+        """Top BROWSE_TOP_N films carrying `genre` (spec 13.5), ranked by
+        mean rating, then by how many viewers rated it, then title, so the
+        order is deterministic when films tie on mean rating — common at
+        this catalogue size. Mean rating is computed from the same merged,
+        filtered dataset the models were trained on, not a fresh query."""
+        catalog = self._movie_catalog
+        carries_genre = catalog["genre"].apply(lambda combination: bool(combination) and genre in combination.split("|"))
+        subset = catalog[carries_genre]
+
+        mean_ratings = self._merged_dataset.groupby("movie_id")["rating"].mean()
+        ranked = subset.assign(mean_rating=subset["movie_id"].map(mean_ratings)).sort_values(
+            by=["mean_rating", "rating_count", "movie_title"], ascending=[False, False, True]
+        )
+
+        return [
+            BrowseFilm(
+                movie_id=int(row.movie_id),
+                movie_title=row.movie_title,
+                genre=row.genre,
+                release_year=row.release_date.year if row.release_date else None,
+                mean_rating=round(float(row.mean_rating), 2),
+                rating_count=int(row.rating_count),
+            )
+            for row in ranked.head(BROWSE_TOP_N).itertuples()
+        ]
 
     def viewer_profile(self, user_id: int) -> ViewerProfile:
         """Profile panel shown above one user's recommendations (spec 13.5).

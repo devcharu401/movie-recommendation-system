@@ -3,7 +3,7 @@ from __future__ import annotations
 from flask import Blueprint, current_app, jsonify, render_template, request
 
 from app.api.page_context import landing_page_context
-from app.api.validators import validate_movie_title, validate_user_id
+from app.api.validators import validate_genre, validate_movie_title, validate_user_id
 
 bp = Blueprint("api", __name__)
 
@@ -51,6 +51,32 @@ def recommend_movie_by_title(movie_title):
 def _render_movie_recommendations(service, movie_title):
     results = service.recommend(movie_title=movie_title)
     return render_template("movie_recommendations.html", movie_title=movie_title, results=results)
+
+
+@bp.route("/browse", methods=["GET"])
+def browse_genres():
+    service = _service()
+    return render_template(
+        "browse.html",
+        genres=service.browse_genres(),
+        selected_genre=None,
+        films=None,
+        min_ratings=current_app.config["MIN_RATINGS_PER_MOVIE"],
+    )
+
+
+@bp.route("/browse/<genre>", methods=["GET"])
+def browse_genre(genre):
+    service = _service()
+    tiles = service.browse_genres()
+    genre = validate_genre(genre, [tile.name for tile in tiles])
+    return render_template(
+        "browse.html",
+        genres=tiles,
+        selected_genre=genre,
+        films=service.browse_by_genre(genre),
+        min_ratings=current_app.config["MIN_RATINGS_PER_MOVIE"],
+    )
 
 
 @bp.route("/api/movies", methods=["GET"])
