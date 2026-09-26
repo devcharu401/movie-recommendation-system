@@ -5,7 +5,6 @@
 <p class="error">{{ error }}</p>
 {% endif %}
 <h2>Browse by Genre</h2>
-<p class="helper">Only films rated by at least {{ min_ratings }} viewers are included.</p>
 <div class="genre-tiles">
     {% for tile in genres %}
     <a class="genre-tile{% if tile.name == selected_genre %} genre-tile-active{% endif %}"
@@ -42,6 +41,6 @@
 {% endif %}
 <p class="back-link"><a href="{{ url_for('api.browse_genres') }}" class="button button-secondary">Back to all genres</a></p>
 {% else %}
-<p class="back-link"><a href="{{ url_for('api.index') }}" class="button button-secondary">Back to form</a></p>
+<p class="back-link"><a href="{{ url_for('api.index') }}" class="button button-secondary">Back to home</a></p>
 {% endif %}
 {% endblock %}

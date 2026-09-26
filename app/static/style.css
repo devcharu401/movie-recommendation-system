@@ -329,28 +329,11 @@ footer a:hover {
     color: var(--color-accent);
 }
 
-.stat-modelled {
-    display: block;
-    font-size: 0.8rem;
-    color: var(--color-text-muted);
-}
-
 .stat-label {
     display: block;
     margin-top: var(--space-1);
     font-size: 0.85rem;
     color: var(--color-text-muted);
-}
-
-.stat-note {
-    margin: var(--space-1) 0 0;
-    color: var(--color-text-muted);
-    font-size: 0.8rem;
-}
-
-.stat-range {
-    color: var(--color-text-muted);
-    font-size: 0.9rem;
 }
 
 /* How it works */
@@ -423,6 +406,10 @@ footer a:hover {
     font-size: 0.9rem;
 }
 
+.random-hint {
+    margin: var(--space-1) 0 0;
+}
+
 /* Viewer results panels */
 
 .profile-card {
@@ -433,15 +420,8 @@ footer a:hover {
     margin-bottom: var(--space-3);
 }
 
-.about-columns {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr));
-    gap: var(--space-3);
+.about-intro {
     margin-bottom: var(--space-3);
-}
-
-.about-columns .profile-card {
-    margin-bottom: 0;
 }
 
 .fact-row {
@@ -668,38 +648,14 @@ button:focus-visible,
     color: var(--color-button-text-on-accent);
 }
 
-/* Performance table */
-
-.table-wrap {
-    overflow-x: auto;
+.result-count {
+    color: var(--color-text-muted);
+    font-size: 0.9rem;
     margin-bottom: var(--space-2);
 }
 
-.k-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 0.9rem;
-}
-
-.k-table th,
-.k-table td {
-    padding: 0.5rem var(--space-1);
-    text-align: right;
-    border-bottom: 1px solid var(--color-border);
-    white-space: nowrap;
-}
-
-.k-table th {
-    color: var(--color-text-muted);
-    font-weight: 600;
-}
-
-.k-table-active {
-    background: var(--color-accent-tint-bg);
-}
-
-.result-count {
-    color: var(--color-text-muted);
+.random-pick {
+    color: var(--color-accent);
     font-size: 0.9rem;
     margin-bottom: var(--space-2);
 }
@@ -890,6 +846,11 @@ button:focus-visible,
 .back-link {
     margin: var(--space-4) 0;
     text-align: center;
+}
+
+.panel .button + .button,
+.back-link .button + .button {
+    margin-left: var(--space-1);
 }
 
 /* Motion: every rule below is scoped inside a prefers-reduced-motion

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import re
 import unittest
 import urllib.parse
 
@@ -56,6 +57,25 @@ class UserBasedRouteTests(unittest.TestCase):
     def test_empty_viewer_returns_400(self):
         response = self.client.post("/recommend/user", data={"user_id": ""})
         self.assertEqual(response.status_code, 400)
+
+
+class RandomViewerRouteTests(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        app, service = support.load_app_and_service()
+        cls.client = app.test_client()
+        cls.known_user_ids = set(service.known_user_ids())
+
+    def test_random_viewer_returns_200(self):
+        self.assertEqual(self.client.get("/recommend/random").status_code, 200)
+
+    def test_two_random_picks_are_known_viewers(self):
+        for call in range(2):
+            with self.subTest(call=call):
+                body = self.client.get("/recommend/random").get_data(as_text=True)
+                match = re.search(r"Recommendations for viewer (\d+)", body)
+                self.assertIsNotNone(match)
+                self.assertIn(int(match.group(1)), self.known_user_ids)
 
 
 class ItemBasedRouteTests(unittest.TestCase):

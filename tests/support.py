@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from app import create_app
 from app.config import Config
+from app.ml.evaluation import EvaluationReport
 from app.services.model_trainer import ModelArtifacts, ModelTrainer
 from app.services.recommendation_service import Recommendation
 
@@ -29,12 +30,18 @@ def load_model_artifacts() -> ModelArtifacts:
         raise MissingPreconditionsError(f"{PRECONDITIONS_MESSAGE} ({exc})") from exc
 
 
+def load_evaluation_report() -> EvaluationReport | None:
+    """Reads the evaluation report scripts/train_model.py persists (spec
+    10), or None if it has not been written."""
+    return ModelTrainer(Config.MODELS_DIR, Config.MIN_RATINGS_PER_MOVIE).load_evaluation()
+
+
 def build_offline_service() -> Recommendation:
     """Builds a Recommendation service straight from the trained model
     artifacts, without a Flask app or a database connection. Every method
     that does not read viewer facts from the database — known_user_ids,
-    recommendable_movie_titles, browse_genres, browse_by_genre,
-    performance_report — works from this alone."""
+    recommendable_movie_titles, browse_genres, browse_by_genre — works
+    from this alone."""
     trainer = ModelTrainer(Config.MODELS_DIR, Config.MIN_RATINGS_PER_MOVIE)
     try:
         return Recommendation(

@@ -43,7 +43,7 @@ corresponds to a `subTest` loop inside that one method.
 | ID | Layer | What is tested | Input | Expected result | Actual result |
 |---|---|---|---|---|---|
 | TC-SVC-01 | Service | Raw dataset statistics | — | 943 viewers, 1,682 films, 100,000 ratings | Pass |
-| TC-SVC-02 | Service | Modelled dataset statistics | — | 338 films, 64,819 ratings | Pass |
+| TC-SVC-02 | Service | Modelled dataset size after the 100-rating filter | — | 338 recommendable films, 64,819 ratings | Pass |
 | TC-SVC-03 | Service | Raw genre count | — | 18 genres | Pass |
 | TC-SVC-04 | Service | Modelled matrix sparsity | — | Rounds to 79.66% | Pass |
 | TC-SVC-05 | Service | Age band: under 18 | 17 | "Under 18" | Pass |
@@ -60,7 +60,7 @@ corresponds to a `subTest` loop inside that one method.
 | TC-SVC-16 | Service | Viewer profile renders without error when occupation is unrecorded | Viewer 57 (occupation "none" in the source data) | `profile.occupation is None`, no exception | Pass |
 | TC-SVC-17 | Service | Browse tile counts match `browse_by_genre()`, capped at the page size | All 18 genres | `len(films) == min(tile.film_count, 12)` | Pass |
 | TC-SVC-18 | Service | Browse results sorted by mean rating, then rating count, then title | All 18 genres | List equals its own sort by `(-mean_rating, -rating_count, title)` | Pass |
-| TC-SVC-19 | Service | Persisted evaluation results exist | — | `performance_report()` is not `None` | Pass |
+| TC-SVC-19 | Service | Persisted evaluation results exist | — | `ModelTrainer.load_evaluation()` is not `None` | Pass |
 | TC-SVC-20 | Service | Every persisted evaluation metric lies between 0 and 1 | Sparsity and every k's precision/recall/coverage | All in `[0, 1]` | Pass |
 
 ## Visualisation (`tests/test_visualization.py`)
@@ -91,14 +91,16 @@ corresponds to a `subTest` loop inside that one method.
 | TC-RT-16 | Routes | Unknown genre on Browse | `GET /browse/NotAGenre` | 400 | Pass |
 | TC-RT-17 | Routes | Unknown route | `GET /does-not-exist` | 404 | Pass |
 | TC-RT-18 | Routes | Unhandled exception renders the error template and exposes no exception details | `GET /health`, with the view function replaced in memory by one that raises `RuntimeError` for the duration of the one request | 500; body contains "Something went wrong on our side." and neither the exception class name nor a traceback | Pass |
+| TC-RT-19 | Routes | Random viewer | `GET /recommend/random` | 200 | Pass |
+| TC-RT-20 | Routes | Random viewer is a known viewer, over two calls | `GET /recommend/random`, twice | Each page names a viewer ID present in `known_user_ids()` | Pass |
 
 ## Run record
 
 - **Command:** `python -m unittest discover -s tests -v`
-- **Date:** 2026-09-22
+- **Date:** 2026-09-26
 - **Python version:** 3.12.10
-- **Total tests:** 62
-- **Pass:** 62
+- **Total tests:** 64
+- **Pass:** 64
 - **Fail:** 0
 - **Error:** 0
 

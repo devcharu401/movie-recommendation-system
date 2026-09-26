@@ -24,9 +24,8 @@ class DatasetStatisticsTests(unittest.TestCase):
         self.assertEqual(stats.raw_ratings, 100000)
 
     def test_modelled_counts(self):
-        stats = self.service.dataset_statistics()
-        self.assertEqual(stats.modelled_films, 338)
-        self.assertEqual(stats.modelled_ratings, 64819)
+        self.assertEqual(len(self.service.recommendable_movie_titles()), 338)
+        self.assertEqual(len(self.service._merged_dataset), 64819)
 
     def test_genre_count(self):
         stats = self.service.dataset_statistics()
@@ -34,12 +33,8 @@ class DatasetStatisticsTests(unittest.TestCase):
 
 
 class ModelledMatrixSparsityTests(unittest.TestCase):
-    @classmethod
-    def setUpClass(cls):
-        cls.service = support.build_offline_service()
-
     def test_sparsity_rounds_to_79_66_percent(self):
-        report = self.service.performance_report()
+        report = support.load_evaluation_report()
         if report is None:
             self.skipTest("No persisted evaluation report; run scripts/train_model.py.")
         self.assertAlmostEqual(round(report.sparsity * 100, 2), 79.66)
@@ -125,16 +120,12 @@ class BrowseGenreConsistencyTests(unittest.TestCase):
 
 
 class PersistedEvaluationTests(unittest.TestCase):
-    @classmethod
-    def setUpClass(cls):
-        cls.service = support.build_offline_service()
-
     def test_evaluation_report_exists(self):
-        report = self.service.performance_report()
+        report = support.load_evaluation_report()
         self.assertIsNotNone(report)
 
     def test_every_metric_lies_between_zero_and_one(self):
-        report = self.service.performance_report()
+        report = support.load_evaluation_report()
         if report is None:
             self.skipTest("No persisted evaluation report; run scripts/train_model.py.")
         self.assertGreaterEqual(report.sparsity, 0.0)

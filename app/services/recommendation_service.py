@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import random
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
@@ -7,8 +8,7 @@ from pathlib import Path
 import pandas as pd
 from sklearn.neighbors import NearestNeighbors
 
-from app.ml.evaluation import EvaluationReport
-from app.ml.knn_engine import HIGH_RATING_THRESHOLD, Neighbor, NeighborRating, recommend_item_based, recommend_user_based
+from app.ml.knn_engine import Neighbor, NeighborRating, recommend_item_based, recommend_user_based
 from app.repositories.rating_repository import get_dataset_statistics, get_user_genre_distribution
 from app.repositories.user_repository import get_user_profile
 from app.services.model_trainer import ModelArtifacts, ModelTrainer
@@ -36,18 +36,13 @@ def _age_band(age: int) -> str:
 
 @dataclass(frozen=True)
 class DatasetOverview:
-    """Landing-page dataset overview (spec 13.5, Result Display Entity).
-    raw_* comes straight from the database; modelled_* is what actually
-    reaches the KNN models after preprocessing's filters (spec 13.2)."""
+    """Dataset overview for the landing and About pages (spec 13.5, Result
+    Display Entity), counted straight from the database."""
 
     raw_viewers: int
     raw_films: int
     raw_ratings: int
     raw_genres: int
-    modelled_viewers: int
-    modelled_films: int
-    modelled_ratings: int
-    modelled_genres: int
     earliest_rating: datetime
     latest_rating: datetime
 
@@ -193,48 +188,29 @@ class Recommendation:
         validation (spec 13.5)."""
         return list(self.user_feature_df.index)
 
+    def random_user_id(self) -> int:
+        """One viewer id drawn uniformly from the trained user-movie matrix,
+        for the "Surprise me" entry point to user-based recommendations
+        (spec 13.5, Input Handler)."""
+        return random.choice(self.known_user_ids())
+
     def recommendable_movie_titles(self) -> list[str]:
         """The filtered, recommendable movie set (spec 13.5), for input
         validation and the /api/movies autocomplete source."""
         return sorted(self._movie_catalog.index)
 
     def dataset_statistics(self) -> DatasetOverview:
-        """Raw counts come from the database via the repository; modelled
-        counts come from the merged, filtered frame already held in memory
-        from artifact load, so this never re-queries or re-derives what
-        train_model() already produced. merged has one row per surviving
-        rating, so user_id/movie_id nunique() and len() give viewers, films
-        and ratings on the right axis; genre still needs splitting on '|'
-        for the same reason as the raw count."""
+        """Raw dataset counts and rating date range, read from the database
+        via the repository."""
         raw = get_dataset_statistics()
-        merged = self._merged_dataset
-        modelled_genre_tokens = {
-            genre for combination in merged["genre"].dropna().unique() if combination for genre in combination.split("|")
-        }
         return DatasetOverview(
             raw_viewers=raw["total_viewers"],
             raw_films=raw["total_films"],
             raw_ratings=raw["total_ratings"],
             raw_genres=raw["distinct_genres"],
-            modelled_viewers=int(merged["user_id"].nunique()),
-            modelled_films=int(merged["movie_id"].nunique()),
-            modelled_ratings=int(len(merged)),
-            modelled_genres=len(modelled_genre_tokens),
             earliest_rating=raw["earliest_rating"],
             latest_rating=raw["latest_rating"],
         )
-
-    def performance_report(self) -> EvaluationReport | None:
-        """Persisted evaluation results for the About page (spec 10), or
-        None if scripts/train_model.py has not produced one yet — the page
-        then shows metrics as unavailable rather than erroring."""
-        return self._trainer.load_evaluation()
-
-    def relevance_threshold(self) -> int:
-        """Minimum held-out rating that counts as 'relevant' in the
-        evaluation metrics (spec 10) — the same threshold the recommender
-        itself uses for a 'highly rated' movie."""
-        return HIGH_RATING_THRESHOLD
 
     def browse_page_size(self) -> int:
         """Number of films the Browse page shows per genre (spec 13.5)."""

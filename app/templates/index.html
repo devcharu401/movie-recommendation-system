@@ -31,41 +31,25 @@
         <div class="stat">
             <span class="stat-value">{{ "{:,}".format(stats.raw_viewers) }}</span>
             <span class="stat-label">Viewers</span>
-            {% if stats.modelled_viewers != stats.raw_viewers %}
-            <span class="stat-modelled">{{ "{:,}".format(stats.modelled_viewers) }} modelled</span>
-            {% endif %}
         </div>
         <div class="stat">
             <span class="stat-value">{{ "{:,}".format(stats.raw_films) }}</span>
             <span class="stat-label">Films</span>
-            {% if stats.modelled_films != stats.raw_films %}
-            <span class="stat-modelled">{{ "{:,}".format(stats.modelled_films) }} modelled</span>
-            {% endif %}
         </div>
         <div class="stat">
             <span class="stat-value">{{ "{:,}".format(stats.raw_ratings) }}</span>
             <span class="stat-label">Ratings</span>
-            {% if stats.modelled_ratings != stats.raw_ratings %}
-            <span class="stat-modelled">{{ "{:,}".format(stats.modelled_ratings) }} modelled</span>
-            {% endif %}
         </div>
         <div class="stat">
             <span class="stat-value">{{ "{:,}".format(stats.raw_genres) }}</span>
             <span class="stat-label">Genres</span>
-            {% if stats.modelled_genres != stats.raw_genres %}
-            <span class="stat-modelled">{{ "{:,}".format(stats.modelled_genres) }} modelled</span>
-            {% endif %}
         </div>
     </div>
-    <p class="stat-range">
-        Ratings collected {{ stats.earliest_rating.strftime('%B %Y') }} to {{ stats.latest_rating.strftime('%B %Y') }}
-    </p>
-    <p class="stat-note">Films rated by fewer than {{ min_ratings }} viewers are excluded from the model.</p>
 </section>
 
 <div class="panels" id="start">
     <section class="panel">
-        <h2>I have a viewer ID</h2>
+        <h2>Try something new</h2>
         <p class="helper">Films picked from people who watch like you</p>
         <form method="post" action="{{ url_for('api.recommend_user') }}#start">
             <div class="field">
@@ -73,6 +57,8 @@
                 <input type="number" id="user_id" name="user_id" min="1" max="{{ max_user_id }}" required>
             </div>
             <button type="submit" class="button button-primary">Get Recommendations</button>
+            <a href="{{ url_for('api.recommend_random_user') }}" class="button button-outline">&#9860; Surprise me</a>
+            <p class="helper random-hint">No ID? Let us pick a viewer at random.</p>
         </form>
     </section>
 

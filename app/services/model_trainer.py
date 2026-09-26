@@ -93,8 +93,9 @@ class ModelTrainer:
     def persist_evaluation(self, report: EvaluationReport) -> None:
         """Stores the evaluation report (spec 10) alongside the model
         artifacts. Kept separate from ARTIFACT_FILES/load(): the report is
-        optional evidence for the About page, not something recommend()
-        depends on, so a missing report must not fail app startup."""
+        evaluation evidence for the testing chapter, not something
+        recommend() depends on, so a missing report must not fail app
+        startup."""
         self._models_dir.mkdir(parents=True, exist_ok=True)
         path = self._models_dir / EVALUATION_REPORT_FILE
         joblib.dump(report, path)

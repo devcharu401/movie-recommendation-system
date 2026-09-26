@@ -24,6 +24,16 @@ def index():
 def recommend_user():
     service = _service()
     user_id = validate_user_id(request.form.get("user_id"), service.known_user_ids())
+    return _render_user_recommendations(service, user_id, picked_at_random=False)
+
+
+@bp.route("/recommend/random", methods=["GET"])
+def recommend_random_user():
+    service = _service()
+    return _render_user_recommendations(service, service.random_user_id(), picked_at_random=True)
+
+
+def _render_user_recommendations(service, user_id, picked_at_random):
     result = service.recommend(user_id=user_id)
     profile = service.viewer_profile(user_id)
     chart_path = service.genre_affinity_chart(user_id, result.recommendations)
@@ -36,6 +46,7 @@ def recommend_user():
         neighbors=result.neighbors,
         contributing_ratings=result.contributing_neighbor_ratings,
         genre_affinity_chart_url=chart_url,
+        picked_at_random=picked_at_random,
     )
 
 
@@ -66,7 +77,6 @@ def browse_genres():
         genres=service.browse_genres(),
         selected_genre=None,
         films=None,
-        min_ratings=current_app.config["MIN_RATINGS_PER_MOVIE"],
         max_films=service.browse_page_size(),
     )
 
@@ -81,7 +91,6 @@ def browse_genre(genre):
         genres=tiles,
         selected_genre=genre,
         films=service.browse_by_genre(genre),
-        min_ratings=current_app.config["MIN_RATINGS_PER_MOVIE"],
         max_films=service.browse_page_size(),
     )
 
@@ -92,10 +101,7 @@ def about():
     return render_template(
         "about.html",
         stats=service.dataset_statistics(),
-        performance=service.performance_report(),
         min_ratings=current_app.config["MIN_RATINGS_PER_MOVIE"],
-        live_k=current_app.config["SIMILAR_USERS_COUNT"],
-        relevance_threshold=service.relevance_threshold(),
     )
 
 

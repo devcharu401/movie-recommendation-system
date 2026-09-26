@@ -5,6 +5,9 @@
 {% if results %}
 <p class="result-count">Showing {{ results|length }} recommendation{{ 's' if results|length != 1 }}.</p>
 {% endif %}
+{% if picked_at_random %}
+<p class="random-pick">We picked this viewer at random — roll again for a different taste.</p>
+{% endif %}
 
 <section class="profile-card">
     <h3>Your taste profile</h3>
@@ -109,5 +112,10 @@
 {% else %}
 <p>No recommendations found — none of this viewer's closest neighbours had a highly-rated film left to suggest.</p>
 {% endif %}
-<p class="back-link"><a href="{{ url_for('api.index') }}" class="button button-outline">Try another viewer ID</a></p>
+<p class="back-link">
+    <a href="{{ url_for('api.index') }}" class="button button-outline">Try another viewer ID</a>
+    {% if picked_at_random %}
+    <a href="{{ url_for('api.recommend_random_user') }}" class="button button-outline">&#9860; Roll again</a>
+    {% endif %}
+</p>
 {% endblock %}
