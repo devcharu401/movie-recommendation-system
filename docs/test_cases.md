@@ -69,6 +69,25 @@ corresponds to a `subTest` loop inside that one method.
 |---|---|---|---|---|---|
 | TC-VIZ-01 | Visualisation | Genre affinity chart writes to a temporary directory and a second call reuses the file | Viewer 10's recommendations, a `tempfile.TemporaryDirectory()` | File under the temp dir; second call returns the same path with an unchanged mtime (no re-render) | Pass |
 
+## Data models (`tests/test_models.py`)
+
+| ID | Layer | What is tested | Input | Expected result | Actual result |
+|---|---|---|---|---|---|
+| TC-DB-01 | Data | Rating below the 1-5 range is rejected | `rating=0` | `IntegrityError` (`ck_ratings_rating_range`) | Pass |
+| TC-DB-02 | Data | Rating above the 1-5 range is rejected | `rating=6` | `IntegrityError` (`ck_ratings_rating_range`) | Pass |
+| TC-DB-03 | Data | A second rating for the same viewer and film is rejected | Two ratings for `(user_id=1, movie_id=1)` | `IntegrityError` (`uq_ratings_user_movie`) | Pass |
+| TC-DB-04 | Data | Rating for a viewer who does not exist is rejected | `user_id=999` | `IntegrityError` (foreign key) | Pass |
+| TC-DB-05 | Data | Rating for a film that does not exist is rejected | `movie_id=999` | `IntegrityError` (foreign key) | Pass |
+| TC-DB-06 | Data | Gender outside M/F is rejected | `gender="X"` | `IntegrityError` (`ck_users_gender`) | Pass |
+| TC-DB-07 | Data | Age below 1 is rejected | `age=0` | `IntegrityError` (`ck_users_age_range`) | Pass |
+| TC-DB-08 | Data | Film with no title is rejected | `movie_title=None` | `IntegrityError` (NOT NULL) | Pass |
+| TC-DB-09 | Data | Rating with no timestamp is rejected | `timestamp=None` | `IntegrityError` (NOT NULL) | Pass |
+| TC-DB-10 | Data | The same title under a different `movie_id` is accepted | `"Toy Story (1995)"` as movie 1 and movie 2 | Both rows stored | Pass |
+
+These run against an empty in-memory SQLite database
+(`tests.support.build_in_memory_database_app`), so they need neither the
+loaded MovieLens database nor trained model artifacts.
+
 ## Routes (`tests/test_routes.py`)
 
 | ID | Layer | What is tested | Input | Expected result | Actual result |
@@ -97,10 +116,10 @@ corresponds to a `subTest` loop inside that one method.
 ## Run record
 
 - **Command:** `python -m unittest discover -s tests -v`
-- **Date:** 2026-09-26
+- **Date:** 2026-09-28
 - **Python version:** 3.12.10
-- **Total tests:** 64
-- **Pass:** 64
+- **Total tests:** 74
+- **Pass:** 74
 - **Fail:** 0
 - **Error:** 0
 
@@ -114,3 +133,5 @@ cannot be mistaken for a pass. Confirmed by temporarily renaming
 are `AgeBandBoundaryTests`, the only class with no database or model
 dependency; every other class's `setUpClass` counted as one error).
 Restoring `models/` and re-running returned to `Ran 62 tests ... OK`.
+That check predates `SchemaConstraintTests`, which also has no database
+or model dependency.

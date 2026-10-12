@@ -63,30 +63,36 @@ Synopsis §12 specifies three relational tables with SQL data types. Flat CSV-on
 ### 3.3 Schema (exact, per synopsis §12)
 
 **users**
-| Column | Type | Key |
-|---|---|---|
-| user_id | INT | PK |
-| age | INT | |
-| gender | VARCHAR(10) | |
-| occupation | VARCHAR(100) | |
-| zip_code | VARCHAR(10) | |
+| Column | Type | Key | Constraints |
+|---|---|---|---|
+| user_id | INT | PK | NOT NULL |
+| age | INT | | NOT NULL, CHECK (age BETWEEN 1 AND 120) |
+| gender | VARCHAR(10) | | NOT NULL, CHECK (gender IN ('M', 'F')) |
+| occupation | VARCHAR(100) | | NOT NULL |
+| zip_code | VARCHAR(10) | | NOT NULL |
 
 **movies**
-| Column | Type | Key |
-|---|---|---|
-| movie_id | INT | PK |
-| movie_title | VARCHAR(255) | |
-| release_date | DATE | |
-| genre | VARCHAR(100) | |
+| Column | Type | Key | Constraints |
+|---|---|---|---|
+| movie_id | INT | PK | NOT NULL |
+| movie_title | VARCHAR(255) | | NOT NULL (not unique: the dataset repeats some titles under a second movie_id) |
+| release_date | DATE | | NULL allowed (blank in the source for one film) |
+| genre | VARCHAR(100) | | NOT NULL (empty string when no genre flag is set) |
 
 **ratings**
-| Column | Type | Key |
-|---|---|---|
-| rating_id | INT | PK, autoincrement |
-| user_id | INT | FK → users.user_id |
-| movie_id | INT | FK → movies.movie_id |
-| rating | INT (1–5) | |
-| timestamp | DATETIME | |
+| Column | Type | Key | Constraints |
+|---|---|---|---|
+| rating_id | INT | PK, autoincrement | NOT NULL |
+| user_id | INT | FK → users.user_id | NOT NULL, indexed |
+| movie_id | INT | FK → movies.movie_id | NOT NULL, indexed |
+| rating | INT (1–5) | | NOT NULL, CHECK (rating BETWEEN 1 AND 5) |
+| timestamp | DATETIME | | NOT NULL |
+| (user_id, movie_id) | composite | | UNIQUE |
+
+SQLite ignores declared foreign keys by default; `app/extensions.py` turns
+them on with `PRAGMA foreign_keys=ON` on every SQLite connection. Foreign
+keys use SQLite's default NO ACTION on delete, since the data layer is
+read-only.
 
 ### 3.4 Known transforms required at load
 - `u.item` carries 19 binary genre flags; collapse to a pipe-delimited string to fit `genre VARCHAR(100)`
@@ -215,7 +221,7 @@ movie-recommender/
 
 ## 8. Coding standard (global rule)
 
-- Human-authored style. No comment restating what the next line does. No AI-boilerplate, no emoji, no decorative banners.
+- Human-authored style. No comment restating what the next line does. No boilerplate, no emoji, no decorative banners.
 - Comments only for non-obvious intent: algorithm rationale, dataset quirks, deliberate trade-offs.
 - Layered separation enforced as in §5. No business logic in routes.
 - All configuration via environment variables; no hardcoded paths, no secrets in the repo.

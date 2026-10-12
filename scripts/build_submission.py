@@ -14,7 +14,7 @@ DIST_DIR = BASE_DIR / "dist"
 
 EXCLUDED_DIR_NAMES = {".venv", "venv", ".git", "__pycache__", "dist", ".idea", ".vscode"}
 EXCLUDED_RELATIVE_DIRS = {Path("app/static/generated")}
-EXCLUDED_FILE_NAMES = {"CLAUDE.md", ".env"}
+EXCLUDED_FILE_NAMES = {".env"}
 EXCLUDED_FILE_SUFFIXES = {".log"}
 
 # Gated behind --include-data: the SQLite database, raw and processed

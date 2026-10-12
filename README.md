@@ -221,8 +221,7 @@ python scripts/build_submission.py
 ```
 
 It always excludes `.venv/`, `.git/`, `__pycache__/`, `dist/`, log
-files, IDE folders, `app/static/generated/`, and developer-tool
-configuration such as `CLAUDE.md`. The database, trained model
+files, IDE folders, and `app/static/generated/`. The database, trained model
 artefacts, and raw MovieLens files are excluded by default — pass
 `--include-data` to include them — because the dataset licence
 restricts redistribution (see "Dataset" below).

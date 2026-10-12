@@ -1,7 +1,10 @@
 from __future__ import annotations
 
+from flask import Flask
+
 from app import create_app
 from app.config import Config
+from app.extensions import db
 from app.ml.evaluation import EvaluationReport
 from app.services.model_trainer import ModelArtifacts, ModelTrainer
 from app.services.recommendation_service import Recommendation
@@ -68,3 +71,13 @@ def load_app_and_service():
     except Exception as exc:
         raise MissingPreconditionsError(f"{PRECONDITIONS_MESSAGE} ({exc})") from exc
     return app, app.extensions["recommendation_service"]
+
+
+def build_in_memory_database_app() -> Flask:
+    """A bare Flask app bound to an empty in-memory SQLite database, for
+    tests that exercise the schema's constraints without touching the
+    loaded MovieLens database or needing trained artifacts."""
+    app = Flask(__name__)
+    app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite://"
+    db.init_app(app)
+    return app
