@@ -18,21 +18,25 @@ an About page explains the method and reports its measured accuracy.
 Built as the practical component of MCSP-232, IGNOU MCA. See
 `PROJECT_SPEC.md` for the full build contract this codebase follows.
 
+**Live demo:** https://movie-recommendation-system-rlu9.onrender.com —
+it runs on a free hosting tier, so the first visit can take up to a
+minute while the server wakes up.
+
 ## Requirements
 
 - Python 3.12
-- git
 
 ## Setup
 
-Clone the repository, create a virtual environment, and install
-dependencies:
+Unzip the submission archive, change into the extracted
+`reelmate-submission-<date>` folder, create a virtual environment, and
+install dependencies:
 
 ### Windows (PowerShell)
 
 ```powershell
-git clone <repository-url> movie-recommendation-system
-cd movie-recommendation-system
+Expand-Archive reelmate-submission-<date>.zip -DestinationPath .
+cd reelmate-submission-<date>
 python -m venv .venv
 .venv\Scripts\Activate.ps1
 pip install -r requirements.txt
@@ -42,8 +46,8 @@ copy .env.example .env
 ### Linux / macOS
 
 ```bash
-git clone <repository-url> movie-recommendation-system
-cd movie-recommendation-system
+unzip reelmate-submission-<date>.zip
+cd reelmate-submission-<date>
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
@@ -52,7 +56,18 @@ cp .env.example .env
 
 ## Building the database and model
 
-Three steps, in order, turn a clean checkout into a runnable app:
+Run this single command to turn a fresh copy into a runnable app:
+
+```bash
+python scripts/initialise.py
+```
+
+It needs an internet connection once, to download MovieLens 100K;
+later runs reuse the downloaded files. It stops with a clear error if
+any step fails.
+
+Alternatively, run the three steps it wraps individually, in this
+order — useful if you need to redo just one:
 
 ```bash
 python scripts/fetch_data.py
@@ -72,10 +87,6 @@ python scripts/train_model.py
   KNN models, persists them to `models/`, and runs the evaluation
   suite against the freshly trained model, persisting its results
   alongside the model artifacts.
-
-`python scripts/initialise.py` runs all three in sequence and stops
-with a clear error if any step fails; the three can also be run
-individually, in that same order, if you need to redo just one.
 
 ## Running the app
 
